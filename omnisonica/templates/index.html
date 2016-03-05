@@ -1,0 +1,25 @@
+<html>
+<head>
+  <script src="static/js/external/lodash.js"></script>
+  <script src="static/js/external/jquery-2.2.1.min.js"></script>
+  <script src="static/js/omni.js"></script>
+</head>
+
+<body>
+
+  <table id="tracktable">
+    <tr class="header">
+      <th><button id="order_track">title</button></th>
+      <th><button id="order_artist">artist</button></th>
+      <th><button id="order_album">album</button></th>
+    </tr>
+    <tbody class="data">
+    </tbody>
+  </table>
+  <script>
+  load_tracks("some_id", "#tracktable .data");
+  </script>
+        
+</body>
+
+</html>
