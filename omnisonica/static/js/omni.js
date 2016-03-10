@@ -1,5 +1,13 @@
 function load_tracks(user_id, table_selector) {
-    var compiled = _.template("<tr class=\"trackrow\"><td class=\"title\"><%= track.t %></td><td class=\"artist\"><%= track.a.n %></td><td class=\"album\"><%= track.c.t %></td></tr>");
+    var tmplt = "<tr class=\"trackrow\">" +
+                "<td class=\"uid\"><%= track.u %></td>" +
+                "<td class=\"title\"><%= track.t %></td>" + 
+                "<td class=\"artist\"><%= track.a.n %></td>" +
+                "<td class=\"album\"><%= track.c.t %></td>" +
+                "<td class=\"release_date\"><%= track.c.r %></td>" +
+                "</tr>";
+    
+    var compiled = _.template(tmplt);
     var t0 = Date.now();
     $.get("tracks/" + user_id, function(data) {
         var t1 = Date.now();
@@ -17,22 +25,58 @@ function tracks_from_dom() {
     var tracks = [];
     $("#tracktable .data .trackrow").each(function(key, value) {
         var track = {
+            "u": $(this).find(".uid").html(),
             "t": $(this).find(".title").html(),
             "a": { "n": $(this).find(".artist").html() },
-            "c": { "t": $(this).find(".album").html() }
+            "c": { "t": $(this).find(".album").html(),
+                   "r": $(this).find(".release_date").html() }
         };
         tracks.push(track);
     });
     return tracks;
 }
 
+function apply_filters() {
+    $("#tracktable .data .trackrow").each(function(key, value) {
+        var max_date = $("#max_date").val();
+        var min_date = $("#min_date").val();
+        if (max_date && $(this).find(".release_date").html() > max_date) {
+            $(this).hide();
+        } else if (min_date && $(this).find(".release_date").html() < min_date) {
+            $(this).hide();
+        } else {
+            $(this).show();
+        }
+    });
+}
+
 function order_tracks(sort_fn) {
-    var compiled = _.template("<tr class=\"trackrow\"><td class=\"title\"><%= track.t %></td><td class=\"artist\"><%= track.a.n %></td><td class=\"album\"><%= track.c.t %></td></tr>");
+    var tmplt = "<tr class=\"trackrow\">" +
+                "<td class=\"uid\"><%= track.u %></td>" +
+                "<td class=\"title\"><%= track.t %></td>" + 
+                "<td class=\"artist\"><%= track.a.n %></td>" +
+                "<td class=\"album\"><%= track.c.t %></td>" +
+                "<td class=\"release_date\"><%= track.c.r %></td>" +
+                "</tr>";
+    
+    var compiled = _.template(tmplt);
     var tracks = _.sortBy(tracks_from_dom(), sort_fn);
     $("#tracktable .data").html("");
     _(tracks).forEach(function(t) {
         $("#tracktable .data").append(compiled({"track": t}));
-    });    
+    });
+    apply_filters();    
+}
+
+function show_track_ids() {
+    var w = window.open("", "Test");
+    w.document.open();
+    $("#tracktable .data .trackrow").each(function(key, value) {
+        if ($(this).is(":visible")) {
+            w.document.write($(this).find(".uid").html() + "<br/>");
+        }
+    });
+    w.document.close();
 }
 
 $(document).ready(function() {
@@ -46,6 +90,14 @@ $(document).ready(function() {
 
    $("#order_album").click(function() {
        order_tracks(function(track) { return track.c.t; });
+   });
+   
+   $("#order_release").click(function() {
+       order_tracks(function(track) { return track.c.r; });
+   });
+   
+   $("#get_track_ids").click(function() {
+      show_track_ids(); 
    });
         
 });

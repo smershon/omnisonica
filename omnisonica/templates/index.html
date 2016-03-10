@@ -6,12 +6,19 @@
 </head>
 
 <body>
+<button id="get_track_ids">Get Track Ids</button><br/>
 
-  <table id="tracktable">
+  <table id="tracktable" style="font-size:10px;font-family:Verdana;">
     <tr class="header">
+      <th>uid</th>
       <th><button id="order_track">title</button></th>
       <th><button id="order_artist">artist</button></th>
       <th><button id="order_album">album</button></th>
+      <th>
+        <button id="order_release">release date</button><br/>
+        Max:<input type="text" id="max_date"></input><br/>
+        Min:<input type="text" id="min_date"></input>
+      </th>
     </tr>
     <tbody class="data">
     </tbody>

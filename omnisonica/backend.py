@@ -1,5 +1,6 @@
 from datatype import Album, Artist, Track
 import random
+import simplejson as json
 
 consonants = ['b','c','d','f','g','h','j','k','l','m',
               'n','p','q','r','s','t','v','w','x','z']
@@ -62,5 +63,28 @@ def random_track(idx):
             
 def get_random_tracks(user_id=None):
     return [random_track(i) for i in xrange(1000)]
+    
+def get_tracks_from_file(user_id=None):
+    tracks = []
+    with open('sample.json', 'rb') as f:
+        for line in f:
+            doc = json.loads(line.strip())
+            track = Track(
+                uid=doc.get('u'),
+                title=doc.get('t'),
+                duration=doc.get('d'),
+                artist=Artist(
+                    doc.get('a', {}).get('u'),
+                    doc.get('a', {}).get('n'),
+                ),
+                album=Album(
+                    uid=doc.get('c', {}).get('u'),
+                    title=doc.get('c', {}).get('t'),
+                    release_date=doc.get('c', {}).get('r')
+                )
+            )
+            tracks.append(track)
+    return tracks
+                    
    
-get_tracks = get_random_tracks 
+get_tracks = get_tracks_from_file 
