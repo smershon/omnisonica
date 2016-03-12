@@ -1,5 +1,5 @@
 function load_tracks(user_id, table_selector) {
-    var tmplt = "<tr class=\"trackrow\">" +
+    var tmplt = "<tr class=\"trackrow\" idx=\"<%= track.idx %>\">" +
                 "<td class=\"uid\"><%= track.u %></td>" +
                 "<td class=\"title\"><%= track.t %></td>" + 
                 "<td class=\"artist\"><%= track.a.n %></td>" +
@@ -11,13 +11,13 @@ function load_tracks(user_id, table_selector) {
     var t0 = Date.now();
     $.get("tracks/" + user_id, function(data) {
         var t1 = Date.now();
-        var tracks = _.sortBy(data.tracks, function(track) { return track.a.n; });
-        var t2 = Date.now(); 
-        _(tracks).forEach(function(t) {
+        var idx = 0;
+        _(data.tracks).forEach(function(t) {
+            t.idx = idx++;
             $(table_selector).append(compiled({"track": t}));
         });
-        var t3 = Date.now();
-        console.log(t1-t0,t2-t1,t3-t2);
+        var t2 = Date.now();
+        console.log(t1-t0,t2-t1);
     });   
 }
 
@@ -25,6 +25,7 @@ function tracks_from_dom() {
     var tracks = [];
     $("#tracktable .data .trackrow").each(function(key, value) {
         var track = {
+            "idx": parseInt($(this).attr("idx")),
             "u": $(this).find(".uid").html(),
             "t": $(this).find(".title").html(),
             "a": { "n": $(this).find(".artist").html() },
@@ -50,9 +51,9 @@ function apply_filters() {
     });
 }
 
-function order_tracks(sort_fn) {
-    var tmplt = "<tr class=\"trackrow\">" +
-                "<td class=\"uid\"><%= track.u %></td>" +
+function order_tracks(sort_fn, reverse) {
+    var tmplt = "<tr class=\"trackrow\" idx=\"<%= track.idx %>\">" +
+                "<td class=\"uid\"><div style=\"display:none;\"><%= track.idx %></div><%= track.u %></td>" +
                 "<td class=\"title\"><%= track.t %></td>" + 
                 "<td class=\"artist\"><%= track.a.n %></td>" +
                 "<td class=\"album\"><%= track.c.t %></td>" +
@@ -61,6 +62,9 @@ function order_tracks(sort_fn) {
     
     var compiled = _.template(tmplt);
     var tracks = _.sortBy(tracks_from_dom(), sort_fn);
+    if (reverse) {
+        tracks.reverse();
+    }
     $("#tracktable .data").html("");
     _(tracks).forEach(function(t) {
         $("#tracktable .data").append(compiled({"track": t}));
@@ -81,7 +85,17 @@ function show_track_ids() {
 
 $(document).ready(function() {
    $("#order_track").click(function() {
-       order_tracks(function(track) { return track.t; });
+       var sorting = $("#tracktable .header .column_track").attr("sorting");
+       if (!sorting) {
+           $("#tracktable .header .column_track").attr("sorting", "asc")
+           order_tracks(function(track) { return track.t; });
+       } else if (sorting === "asc") {
+           $("#tracktable .header .column_track").attr("sorting", "desc")
+           order_tracks(function(track) { return track.t; }, true);
+       } else {
+           $("#tracktable .header .column_track").removeAttr("sorting")
+           order_tracks(function(track) { return track.idx; });
+       }
    });
        
    $("#order_artist").click(function() {
