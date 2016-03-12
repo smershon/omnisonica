@@ -83,32 +83,27 @@ function show_track_ids() {
     w.document.close();
 }
 
-$(document).ready(function() {
-   $("#order_track").click(function() {
-       var sorting = $("#tracktable .header .column_track").attr("sorting");
-       if (!sorting) {
-           $("#tracktable .header .column_track").attr("sorting", "asc")
-           order_tracks(function(track) { return track.t; });
-       } else if (sorting === "asc") {
-           $("#tracktable .header .column_track").attr("sorting", "desc")
-           order_tracks(function(track) { return track.t; }, true);
-       } else {
-           $("#tracktable .header .column_track").removeAttr("sorting")
-           order_tracks(function(track) { return track.idx; });
-       }
-   });
-       
-   $("#order_artist").click(function() {
-       order_tracks(function(track) { return track.a.n; });
-   });
+function make_sortable(column, sort_fn) {
+    $("#tracktable .header " + column + " .sort_button").click(function() {
+        var sorting = $(this).attr("sorting");
+        if (!sorting) {
+            $(this).attr("sorting", "asc");
+            order_tracks(sort_fn);
+        } else if (sorting === "asc") {
+            $(this).attr("sorting", "desc");
+            order_tracks(sort_fn, true);
+        } else {
+            $(this).removeAttr("sorting");
+            order_tracks(function(track) { return track.idx; });
+        }     
+    });
+}
 
-   $("#order_album").click(function() {
-       order_tracks(function(track) { return track.c.t; });
-   });
-   
-   $("#order_release").click(function() {
-       order_tracks(function(track) { return track.c.r; });
-   });
+$(document).ready(function() {
+   make_sortable(".column_track", function(track) { return track.t; });
+   make_sortable(".column_artist", function(track) { return track.a.n; });
+   make_sortable(".column_album", function(track) { return track.c.t; });
+   make_sortable(".column_release", function(track) { return track.c.r; });
    
    $("#get_track_ids").click(function() {
       show_track_ids(); 
