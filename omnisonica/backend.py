@@ -66,7 +66,7 @@ def get_random_tracks(user_id=None):
     
 def get_tracks_from_file(user_id=None):
     tracks = []
-    with open('sample.json', 'rb') as f:
+    with open('data/funk.json', 'rb') as f:
         for line in f:
             doc = json.loads(line.strip())
             track = Track(
