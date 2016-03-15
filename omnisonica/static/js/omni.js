@@ -103,5 +103,8 @@ $(function() {
 
     sortable_table("#tracktable");
     load_tracks("some_id", "#tracktable .data");
+    $("#get_track_ids").click(function() {
+        show_track_ids();
+    });
 
 });
