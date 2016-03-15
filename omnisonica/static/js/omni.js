@@ -9,70 +9,51 @@ $(function() {
                 "</tr>";
 
     var compiled = _.template(tmplt);
+    var tracks = [];
 
     function load_tracks(user_id, table_selector) {
-        var t0 = Date.now();
         $.get("tracks/" + user_id, function(data) {
-            var t1 = Date.now();
             var idx = 0;
             _(data.tracks).forEach(function(t) {
                 t.idx = idx++;
+                tracks.push(t);
                 $(table_selector).append(compiled({"track": t}));
             });
-            var t2 = Date.now();
-            console.log(t1-t0,t2-t1);
         });   
     }
-
-    function tracks_from_dom(table) {
-        var tracks = [];
-        $(table + " .data .trackrow").each(function(key, value) {
-            var track = {
-                "idx": parseInt($(this).attr("idx")),
-                "u": $(this).find(".uid").html(),
-                "t": $(this).find(".title").html(),
-                "a": { "n": $(this).find(".artist").html() },
-                "c": { "t": $(this).find(".album").html(),
-                       "r": $(this).find(".release_date").html() }
-            };
-            tracks.push(track);
-        });
-        return tracks;
-    }
-
-    function apply_filters() {
-        $("#tracktable .data .trackrow").each(function(key, value) {
-            var max_date = $("#max_date").val();
-            var min_date = $("#min_date").val();
-            if (max_date && $(this).find(".release_date").html() > max_date) {
-                $(this).hide();
-            } else if (min_date && $(this).find(".release_date").html() < min_date) {
-                $(this).hide();
-            } else {
-                $(this).show();
-            }
-        });
+    
+    function show_track(t) {
+        var max_date = $("#max_date").val();
+        var min_date = $("#min_date").val();
+        if (max_date && t.c.r > max_date) {
+            return false;
+        }
+        if (min_date && t.c.r < min_date) {
+            return false
+        }
+        return true;     
     }
 
     function order_tracks(table, sort_fn, reverse) {
-        var tracks = _.sortBy(tracks_from_dom(table), sort_fn);
+        console.log(tracks[0]);
+        tracks = _.sortBy(tracks, sort_fn);
+        console.log(tracks[0]);
         if (reverse) {
             tracks.reverse();
         }
         $(table + " .data").html("");
         _(tracks).forEach(function(t) {
-            $(table + " .data").append(compiled({"track": t}));
-        });
-        apply_filters();    
+            if (show_track(t)) {
+                $(table + " .data").append(compiled({"track": t}));
+            }
+        });   
     }
 
     function show_track_ids() {
         var w = window.open("", "Test");
         w.document.open();
         $("#tracktable .data .trackrow").each(function(key, value) {
-            if ($(this).is(":visible")) {
-                w.document.write($(this).find(".uid").html() + "<br/>");
-            }
+            w.document.write($(this).find(".uid").html() + "<br/>");
         });
         w.document.close();
     }
