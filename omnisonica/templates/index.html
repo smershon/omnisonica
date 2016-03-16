@@ -1,29 +1,10 @@
 <html>
 <head>
-  <script src="static/js/external/lodash.js"></script>
-  <script src="static/js/external/jquery-2.2.1.min.js"></script>
-  <script src="static/js/omni.js"></script> 
 </head>
-
 <body>
-<button id="get_track_ids">Get Track Ids</button><br/>
-
-  <table id="tracktable" style="font-size:10px;font-family:Verdana;">
-    <tr class="header">
-      <th class="column_uid">uid</th>
-      <th class="column_track"><button class="sort_button">title</button></th>
-      <th class="column_artist"><button class="sort_button">artist</button></th>
-      <th class="column_album"><button class="sort_button">album</button></th>
-      <th class="column_release">
-        <button class="sort_button">release date</button><br/>
-        Max:<input type="text" id="max_date"></input><br/>
-        Min:<input type="text" id="min_date"></input>
-      </th>
-    </tr>
-    <tbody class="data">
-    </tbody>
-  </table>
-      
+  {% for view in views %}
+  <p><a href="{{ view }}">{{ view }}</a></p>
+  {% endfor %}
 </body>
 
 </html>

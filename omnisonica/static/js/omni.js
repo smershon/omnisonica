@@ -11,8 +11,8 @@ $(function() {
     var compiled = _.template(tmplt);
     var tracks = [];
 
-    function load_tracks(user_id, table_selector) {
-        $.get("tracks/" + user_id, function(data) {
+    function load_tracks(view, table_selector) {
+        $.get("j/tracks/" + view, function(data) {
             var idx = 0;
             _(data.tracks).forEach(function(t) {
                 t.idx = idx++;
@@ -35,9 +35,7 @@ $(function() {
     }
 
     function order_tracks(table, sort_fn, reverse) {
-        console.log(tracks[0]);
         tracks = _.sortBy(tracks, sort_fn);
-        console.log(tracks[0]);
         if (reverse) {
             tracks.reverse();
         }
@@ -83,7 +81,7 @@ $(function() {
     
 
     sortable_table("#tracktable");
-    load_tracks("some_id", "#tracktable .data");
+    load_tracks($("#view").html(), "#tracktable .data");
     $("#get_track_ids").click(function() {
         show_track_ids();
     });

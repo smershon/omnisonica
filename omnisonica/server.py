@@ -13,11 +13,15 @@ app = Flask(__name__)
 
 @app.route('/')
 def index():
-    return render_template('index.html')
+    return render_template('index.html', views=backend.get_views())
 
-@app.route('/tracks/<user_id>')
-def tracks(user_id=None):
-    tracks = backend.get_tracks(user_id)
+@app.route('/<view>')
+def view(view='all'):
+    return render_template('tracks.html', view=view)
+
+@app.route('/j/tracks/<view>')
+def tracks(view=None):
+    tracks = backend.get_tracks(view)
     return jsonify({'tracks': [x._to_dict() for x in tracks]})
     
 if __name__ == '__main__':
