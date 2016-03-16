@@ -79,11 +79,23 @@ $(function() {
         make_sortable(selector, ".column_release", function(t) { return t.c.r; });
     }
     
+    function search_tracks() {
+        var search_term = $("#track_search_input").val();
+        if (search_term) {
+            $.get("/j/search/tracks", { "term": search_term }, function(data) {
+                console.log(data);
+            });
+        }
+    }
+    
 
     sortable_table("#tracktable");
     load_tracks($("#view").html(), "#tracktable .data");
     $("#get_track_ids").click(function() {
         show_track_ids();
+    });
+    $("button.track_search").click(function() {
+        search_tracks();
     });
 
 });

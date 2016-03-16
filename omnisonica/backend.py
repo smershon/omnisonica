@@ -1,4 +1,5 @@
-from datatype import Album, Artist, Track
+from clients.datatype import Album, Artist, Track
+from clients import spotify_client
 import random
 import os
 import simplejson as json
@@ -6,6 +7,8 @@ import simplejson as json
 consonants = ['b','c','d','f','g','h','j','k','l','m',
               'n','p','q','r','s','t','v','w','x','z']
 vowels = ['a','e','i','o','u','y']
+
+spotify = spotify_client.Client()
 
 def get_two_sample_tracks(user_id=None):
     return [
@@ -92,6 +95,9 @@ def get_tracks_from_file(view=None):
     
 def get_views(user_id=None):
     return [x.split('.')[0] for x in os.listdir('data')]
+    
+def search_tracks(query):
+    return ""
                     
    
 get_tracks = get_tracks_from_file 
