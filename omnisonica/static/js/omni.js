@@ -83,7 +83,11 @@ $(function() {
         var search_term = $("#track_search_input").val();
         if (search_term) {
             $.get("/j/search/tracks", { "term": search_term }, function(data) {
-                console.log(data);
+                results_html = ""
+                _(data.tracks).each(function(t) {
+                    results_html += compiled({"track": t});
+                });
+                $("#searchtable .results").html(results_html);
             });
         }
     }
