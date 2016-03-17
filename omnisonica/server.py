@@ -28,7 +28,7 @@ def tracks(view=None):
 @app.route('/j/search/tracks')
 def search_tracks():
     search_term = request.args.get('term');
-    return jsonify({'results': backend.search_tracks(search_term)})
+    return jsonify({'tracks': [x._to_dict() for x in backend.search_tracks(search_term)]})
     
 if __name__ == '__main__':
     app.run()

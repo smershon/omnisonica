@@ -97,7 +97,7 @@ def get_views(user_id=None):
     return [x.split('.')[0] for x in os.listdir('data')]
     
 def search_tracks(query):
-    return ""
+    return spotify.search_tracks(query)
                     
    
 get_tracks = get_tracks_from_file 
