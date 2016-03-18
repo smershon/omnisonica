@@ -1,0 +1,21 @@
+h3 {
+    color: navy;
+    margin-left: 20px;
+}
+
+table {
+    font-size: 10px;
+    font-family: Verdana;
+}
+
+.trackrow {
+    background-color: #0000ff;
+}
+
+.even {
+    background-color: #efffef;
+}
+
+.odd {
+    background-color: #cfffcf;
+}

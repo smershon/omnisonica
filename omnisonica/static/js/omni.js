@@ -1,6 +1,6 @@
 $(function() {
 
-    var tmplt = "<tr class=\"trackrow\" idx=\"<%= track.idx %>\">" +
+    var tmplt = "<tr class=\"trackrow <%= rowtype %>\" idx=\"<%= track.idx %>\">" +
                 "<td class=\"uid\"><%= track.u %></td>" +
                 "<td class=\"title\"><%= track.t %></td>" + 
                 "<td class=\"artist\"><%= track.a.n %></td>" +
@@ -14,10 +14,11 @@ $(function() {
     function load_tracks(view, table_selector) {
         $.get("j/tracks/" + view, function(data) {
             var idx = 0;
+            var rowtypes = ["even", "odd"];
             _(data.tracks).forEach(function(t) {
                 t.idx = idx++;
                 tracks.push(t);
-                $(table_selector).append(compiled({"track": t}));
+                $(table_selector).append(compiled({"track": t, "rowtype": rowtypes[t.idx%2]}));
             });
         });   
     }
@@ -40,9 +41,11 @@ $(function() {
             tracks.reverse();
         }
         $(table + " .data").html("");
-        _(tracks).forEach(function(t) {
+        var rowtypes = ["even", "odd"];
+        var i = 0;
+        _(tracks).forEach(function(t,i) {
             if (show_track(t)) {
-                $(table + " .data").append(compiled({"track": t}));
+                $(table + " .data").append(compiled({"track": t, "rowtype":rowtypes[i++%2]}));
             }
         });   
     }
@@ -81,11 +84,12 @@ $(function() {
     
     function search_tracks() {
         var search_term = $("#track_search_input").val();
+        var rowtypes = ["even", "odd"];
         if (search_term) {
             $.get("/j/search/tracks", { "term": search_term }, function(data) {
                 results_html = ""
-                _(data.tracks).each(function(t) {
-                    results_html += compiled({"track": t});
+                _(data.tracks).each(function(t,i) {
+                    results_html += compiled({"track": t, "rowtype": rowtypes[i%2]});
                 });
                 $("#searchtable .results").html(results_html);
             });
