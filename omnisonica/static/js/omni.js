@@ -21,13 +21,31 @@ $(function() {
                            "</tr>";
     var search_row = _.template(search_row_tmplt);
     
-    function insert_search_results(selector, tracks) {
+    function insert_search_results(selector, found_tracks, destination) {
         var results_html = "";
         var rowtypes = ["even", "odd"];
-        _(tracks).each(function(t,i) {
+        _(found_tracks).each(function(t,i) {
             results_html += search_row({"track": t, "rowtype": rowtypes[i%2]});
         });
         $(selector).html(results_html);
+        $(selector + " .add_remove").click(function() {
+            var row = $(this).parent().parent();
+            var rowtypes = ["even", "odd"];
+            var track = {
+                "u": row.find(".uid").html(),
+                "t": row.find(".title").html(),
+                "a": {
+                    "n": row.find(".artist").html()
+                },
+                "c": {
+                    "t": row.find(".album").html(),
+                    "r": row.find(".release_date").html()
+                },
+                "idx": tracks.length
+            }
+            tracks.push(track);
+            $(destination).append(compiled({"track": track, "rowtype": rowtypes[track.idx%2]}));
+        });
     }
 
     function load_tracks(view, table_selector) {
@@ -101,12 +119,12 @@ $(function() {
         make_sortable(selector, ".column_release", function(t) { return t.c.r; });
     }
     
-    function search_tracks() {
+    function search_tracks(destination) {
         var search_term = $("#track_search_input").val();
         var rowtypes = ["even", "odd"];
         if (search_term) {
             $.get("/j/search/tracks", { "term": search_term }, function(data) {
-                insert_search_results("#searchtable .results", data.tracks);
+                insert_search_results("#searchtable .results", data.tracks, destination);
             });
         }
     }
@@ -118,7 +136,7 @@ $(function() {
         show_track_ids();
     });
     $("button.track_search").click(function() {
-        search_tracks();
+        search_tracks("#tracktable .data");
     });
 
 });
