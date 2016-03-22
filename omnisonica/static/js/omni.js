@@ -10,6 +10,25 @@ $(function() {
 
     var compiled = _.template(tmplt);
     var tracks = [];
+    
+    var search_row_tmplt = "<tr class=\"trackrow <%= rowtype %>\" idx=\"<%= track.idx %>\">" +
+                           "<td class=\"uid\"><%= track.u %></td>" +
+                           "<td class=\"title\"><%= track.t %></td>" + 
+                           "<td class=\"artist\"><%= track.a.n %></td>" +
+                           "<td class=\"album\"><%= track.c.t %></td>" +
+                           "<td class=\"release_date\"><%= track.c.r %></td>" +
+                           "<td><button class=\"add_remove\">add</button></td>" +
+                           "</tr>";
+    var search_row = _.template(search_row_tmplt);
+    
+    function insert_search_results(selector, tracks) {
+        var results_html = "";
+        var rowtypes = ["even", "odd"];
+        _(tracks).each(function(t,i) {
+            results_html += search_row({"track": t, "rowtype": rowtypes[i%2]});
+        });
+        $(selector).html(results_html);
+    }
 
     function load_tracks(view, table_selector) {
         $.get("j/tracks/" + view, function(data) {
@@ -87,11 +106,7 @@ $(function() {
         var rowtypes = ["even", "odd"];
         if (search_term) {
             $.get("/j/search/tracks", { "term": search_term }, function(data) {
-                results_html = ""
-                _(data.tracks).each(function(t,i) {
-                    results_html += compiled({"track": t, "rowtype": rowtypes[i%2]});
-                });
-                $("#searchtable .results").html(results_html);
+                insert_search_results("#searchtable .results", data.tracks);
             });
         }
     }
