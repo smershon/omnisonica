@@ -1,6 +1,6 @@
 $(function() {
 
-    var tmplt = "<tr class=\"trackrow <%= rowtype %>\" idx=\"<%= track.idx %>\">" +
+    var tmplt = "<tr class=\"trackrow\" idx=\"<%= track.idx %>\">" +
                 "<td class=\"uid\"><%= track.u %></td>" +
                 "<td class=\"title\"><%= track.t %></td>" + 
                 "<td class=\"artist\"><%= track.a.n %></td>" +
@@ -11,7 +11,7 @@ $(function() {
     var compiled = _.template(tmplt);
     var tracks = [];
     
-    var search_row_tmplt = "<tr class=\"trackrow <%= rowtype %>\" idx=\"<%= track.idx %>\">" +
+    var search_row_tmplt = "<tr class=\"trackrow\" idx=\"<%= track.idx %>\">" +
                            "<td class=\"uid\"><%= track.u %></td>" +
                            "<td class=\"title\"><%= track.t %></td>" + 
                            "<td class=\"artist\"><%= track.a.n %></td>" +
@@ -38,21 +38,17 @@ $(function() {
     
     function insert_search_results(selector, found_tracks, destination) {
         var results_html = "";
-        var rowtypes = ["even", "odd"];
         _(found_tracks).each(function(t,i) {
             results_html += search_row({
-                "track": t, 
-                "rowtype": rowtypes[i%2],
+                "track": t,
                 "action": "add"});
         });
         $(selector).html(results_html);
         $(selector + " .add").click(function() {
-            var rowtypes = ["even", "odd"];
             var track = track_from_row($(this).parent().parent())
             tracks.push(track);
             $(destination).append(compiled({
-                "track": track, 
-                "rowtype": rowtypes[track.idx%2]}));
+                "track": track}));
             $(this).html("remove");
             $(this).unbind("click");
             $(this).click(function() {
@@ -64,11 +60,10 @@ $(function() {
     function load_tracks(view, table_selector) {
         $.get("j/tracks/" + view, function(data) {
             var idx = 0;
-            var rowtypes = ["even", "odd"];
             _(data.tracks).forEach(function(t) {
                 t.idx = idx++;
                 tracks.push(t);
-                $(table_selector).append(compiled({"track": t, "rowtype": rowtypes[t.idx%2]}));
+                $(table_selector).append(compiled({"track": t}));
             });
         });   
     }

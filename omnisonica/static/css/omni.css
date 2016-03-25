@@ -6,16 +6,17 @@ h3 {
 table {
     font-size: 10px;
     font-family: Verdana;
+    border-collapse: collapse;
+}
+
+th, td {
+    border-bottom: 1px solid #00cfcf;
 }
 
 .trackrow {
-    background-color: #0000ff;
+    background-color: #cfffff;
 }
 
-.even {
-    background-color: #efffef;
-}
-
-.odd {
-    background-color: #cfffcf;
+.trackrow:hover {
+    background-color: #7fffff;
 }
