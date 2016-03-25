@@ -17,34 +17,47 @@ $(function() {
                            "<td class=\"artist\"><%= track.a.n %></td>" +
                            "<td class=\"album\"><%= track.c.t %></td>" +
                            "<td class=\"release_date\"><%= track.c.r %></td>" +
-                           "<td><button class=\"add_remove\">add</button></td>" +
+                           "<td><button class=\"<%= action %>\"><%= action %></button></td>" +
                            "</tr>";
     var search_row = _.template(search_row_tmplt);
+    
+    function track_from_row(row) {
+        return {
+            "u": row.find(".uid").html(),
+            "t": row.find(".title").html(),
+            "a": {
+                "n": row.find(".artist").html()
+            },
+            "c": {
+                "t": row.find(".album").html(),
+                "r": row.find(".release_date").html()
+            },
+            "idx": tracks.length
+        }        
+    }
     
     function insert_search_results(selector, found_tracks, destination) {
         var results_html = "";
         var rowtypes = ["even", "odd"];
         _(found_tracks).each(function(t,i) {
-            results_html += search_row({"track": t, "rowtype": rowtypes[i%2]});
+            results_html += search_row({
+                "track": t, 
+                "rowtype": rowtypes[i%2],
+                "action": "add"});
         });
         $(selector).html(results_html);
-        $(selector + " .add_remove").click(function() {
-            var row = $(this).parent().parent();
+        $(selector + " .add").click(function() {
             var rowtypes = ["even", "odd"];
-            var track = {
-                "u": row.find(".uid").html(),
-                "t": row.find(".title").html(),
-                "a": {
-                    "n": row.find(".artist").html()
-                },
-                "c": {
-                    "t": row.find(".album").html(),
-                    "r": row.find(".release_date").html()
-                },
-                "idx": tracks.length
-            }
+            var track = track_from_row($(this).parent().parent())
             tracks.push(track);
-            $(destination).append(compiled({"track": track, "rowtype": rowtypes[track.idx%2]}));
+            $(destination).append(compiled({
+                "track": track, 
+                "rowtype": rowtypes[track.idx%2]}));
+            $(this).html("remove");
+            $(this).unbind("click");
+            $(this).click(function() {
+               console.log("ridiculous"); 
+            });
         });
     }
 
