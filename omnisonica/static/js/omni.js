@@ -6,6 +6,7 @@ $(function() {
                 "<td class=\"artist\"><%= track.a.n %></td>" +
                 "<td class=\"album\"><%= track.c.t %></td>" +
                 "<td class=\"release_date\"><%= track.c.r %></td>" +
+                "<td><button class=\"<%= action %>\"><%= action %></button></td>" +
                 "</tr>";
 
     var compiled = _.template(tmplt);
@@ -42,6 +43,7 @@ $(function() {
         tracks[track.u.split(":").pop()] = track;
         $(selector).append(compiled({
             "track": track,
+            "action": "remove",
             "row_id": track.u.split(":").pop()}));
         button.html("remove");
         button.unbind("click");
@@ -86,9 +88,15 @@ $(function() {
             _(data.tracks).forEach(function(t) {
                 t.idx = idx++;
                 tracks[t.u.split(":").pop()] = t;
-                $(table_selector).append(compiled({"track": t, "row_id": t.u.split(":").pop()}));
+                $(table_selector).append(compiled({
+                    "track": t,
+                    "action": "remove", 
+                    "row_id": t.u.split(":").pop()}));
             });
-        });   
+            $(table_selector + " .remove").click(function() {
+                remove_track($(this), table_selector);
+            }); 
+        });  
     }
     
     function show_track(t) {
@@ -104,12 +112,15 @@ $(function() {
     }
 
     function order_tracks(table, sort_fn, reverse) {
-        tracks = _.sortBy(tracks, sort_fn);
+        var trackArray = Object.keys(tracks).map(function(key) {
+            return tracks[key];
+        });
+        trackArray = _.sortBy(trackArray, sort_fn);
         if (reverse) {
-            tracks.reverse();
+            trackArray.reverse();
         }
         $(table + " .data").html("");
-        _(tracks).forEach(function(t) {
+        _(trackArray).forEach(function(t) {
             if (show_track(t)) {
                 $(table + " .data").append(compiled({"track": t, "row_id": t.u.split(":").pop()}));
             }
