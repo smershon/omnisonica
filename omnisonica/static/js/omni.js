@@ -1,6 +1,6 @@
 $(function() {
 
-    var tmplt = "<tr class=\"trackrow\" idx=\"<%= track.idx %>\">" +
+    var tmplt = "<tr class=\"trackrow\" id=\"<%= row_id %>\">" +
                 "<td class=\"uid\"><%= track.u %></td>" +
                 "<td class=\"title\"><%= track.t %></td>" + 
                 "<td class=\"artist\"><%= track.a.n %></td>" +
@@ -11,7 +11,7 @@ $(function() {
     var compiled = _.template(tmplt);
     var tracks = [];
     
-    var search_row_tmplt = "<tr class=\"trackrow\" idx=\"<%= track.idx %>\">" +
+    var search_row_tmplt = "<tr class=\"trackrow\" id=\"<%= row_id %>\">" +
                            "<td class=\"uid\"><%= track.u %></td>" +
                            "<td class=\"title\"><%= track.t %></td>" + 
                            "<td class=\"artist\"><%= track.a.n %></td>" +
@@ -36,23 +36,33 @@ $(function() {
         }        
     }
     
+    function remove_track(row, selector) {
+        var uid = row.find(".uid").html().split(":").pop();
+        console.log(selector + " #" + uid);
+        $(selector + " #" + uid).remove();
+        console.log(row.find(".title").html());
+    }
+    
     function insert_search_results(selector, found_tracks, destination) {
         var results_html = "";
         _(found_tracks).each(function(t,i) {
             results_html += search_row({
                 "track": t,
-                "action": "add"});
+                "action": "add",
+                "row_id": t.u.split(":").pop()});
         });
         $(selector).html(results_html);
         $(selector + " .add").click(function() {
-            var track = track_from_row($(this).parent().parent())
+            var row = $(this).parent().parent();
+            var track = track_from_row(row)
             tracks.push(track);
             $(destination).append(compiled({
-                "track": track}));
+                "track": track,
+                "row_id": track.u.split(":").pop()}));
             $(this).html("remove");
             $(this).unbind("click");
             $(this).click(function() {
-               console.log("ridiculous"); 
+               remove_track(row, destination);
             });
         });
     }
@@ -63,7 +73,7 @@ $(function() {
             _(data.tracks).forEach(function(t) {
                 t.idx = idx++;
                 tracks.push(t);
-                $(table_selector).append(compiled({"track": t}));
+                $(table_selector).append(compiled({"track": t, "row_id": t.u.split(":").pop()}));
             });
         });   
     }
@@ -86,11 +96,9 @@ $(function() {
             tracks.reverse();
         }
         $(table + " .data").html("");
-        var rowtypes = ["even", "odd"];
-        var i = 0;
-        _(tracks).forEach(function(t,i) {
+        _(tracks).forEach(function(t) {
             if (show_track(t)) {
-                $(table + " .data").append(compiled({"track": t, "rowtype":rowtypes[i++%2]}));
+                $(table + " .data").append(compiled({"track": t, "row_id": t.u.split(":").pop()}));
             }
         });   
     }
