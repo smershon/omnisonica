@@ -9,7 +9,7 @@ $(function() {
                 "</tr>";
 
     var compiled = _.template(tmplt);
-    var tracks = [];
+    var tracks = {};
     
     var search_row_tmplt = "<tr class=\"trackrow\" id=\"<%= row_id %>\">" +
                            "<td class=\"uid\"><%= track.u %></td>" +
@@ -39,7 +39,7 @@ $(function() {
     function add_track(button, selector) {
         var row = button.parent().parent();
         var track = track_from_row(row);
-        tracks.push(track);
+        tracks[track.u.split(":").pop()] = track;
         $(selector).append(compiled({
             "track": track,
             "row_id": track.u.split(":").pop()}));
@@ -53,6 +53,7 @@ $(function() {
     function remove_track(button, selector) {
         var row = button.parent().parent();
         var uid = row.find(".uid").html().split(":").pop();
+        delete(tracks[uid]);
         $(selector + " #" + uid).remove();
         button.html("add");
         button.unbind("click");
@@ -64,9 +65,10 @@ $(function() {
     function insert_search_results(selector, found_tracks, destination) {
         var results_html = "";
         _(found_tracks).each(function(t,i) {
+            var add_remove = (tracks[t.u.split(":").pop()]) ? "remove" : "add";
             results_html += search_row({
                 "track": t,
-                "action": "add",
+                "action": add_remove,
                 "row_id": t.u.split(":").pop()});
         });
         $(selector).html(results_html);
@@ -83,7 +85,7 @@ $(function() {
             var idx = 0;
             _(data.tracks).forEach(function(t) {
                 t.idx = idx++;
-                tracks.push(t);
+                tracks[t.u.split(":").pop()] = t;
                 $(table_selector).append(compiled({"track": t, "row_id": t.u.split(":").pop()}));
             });
         });   
