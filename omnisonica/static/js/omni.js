@@ -36,11 +36,29 @@ $(function() {
         }        
     }
     
-    function remove_track(row, selector) {
+    function add_track(button, selector) {
+        var row = button.parent().parent();
+        var track = track_from_row(row);
+        tracks.push(track);
+        $(selector).append(compiled({
+            "track": track,
+            "row_id": track.u.split(":").pop()}));
+        button.html("remove");
+        button.unbind("click");
+        button.click(function() {
+            remove_track(button, selector)
+        });
+    }
+    
+    function remove_track(button, selector) {
+        var row = button.parent().parent();
         var uid = row.find(".uid").html().split(":").pop();
-        console.log(selector + " #" + uid);
         $(selector + " #" + uid).remove();
-        console.log(row.find(".title").html());
+        button.html("add");
+        button.unbind("click");
+        button.click(function() {
+            add_track(button, selector);
+        });
     }
     
     function insert_search_results(selector, found_tracks, destination) {
@@ -53,17 +71,10 @@ $(function() {
         });
         $(selector).html(results_html);
         $(selector + " .add").click(function() {
-            var row = $(this).parent().parent();
-            var track = track_from_row(row)
-            tracks.push(track);
-            $(destination).append(compiled({
-                "track": track,
-                "row_id": track.u.split(":").pop()}));
-            $(this).html("remove");
-            $(this).unbind("click");
-            $(this).click(function() {
-               remove_track(row, destination);
-            });
+            add_track($(this), destination);
+        });
+        $(selector + " .remove").click(function() {
+            remove_track($(this), destination);
         });
     }
 
