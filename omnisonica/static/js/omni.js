@@ -22,6 +22,16 @@ $(function() {
                            "</tr>";
     var search_row = _.template(search_row_tmplt);
     
+    function next_idx() {
+        var idx = 0;
+        _(Object.keys(tracks)).each(function(key) {
+            if (tracks[key].idx > idx) {
+                idx = tracks[key].idx;
+            }
+        });
+        return idx + 1;
+    }
+    
     function track_from_row(row) {
         return {
             "u": row.find(".uid").html(),
@@ -33,13 +43,14 @@ $(function() {
                 "t": row.find(".album").html(),
                 "r": row.find(".release_date").html()
             },
-            "idx": tracks.length
+            "idx": next_idx()
         }        
     }
     
     function add_track(button, selector) {
         var row = button.parent().parent();
         var track = track_from_row(row);
+        console.log(track);
         tracks[track.u.split(":").pop()] = track;
         $(selector).append(compiled({
             "track": track,
@@ -169,6 +180,19 @@ $(function() {
         }
     }
     
+    function save_view(view_name) {
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/save_view/" + view_name,
+            data: JSON.stringify(tracks),
+            success: function(data) {
+                console.log(data);
+            },
+            dataType: "json"
+        });
+    }
+    
 
     sortable_table("#tracktable");
     load_tracks($("#view").html(), "#tracktable .data");
@@ -177,6 +201,9 @@ $(function() {
     });
     $("button.track_search").click(function() {
         search_tracks("#tracktable .data");
+    });
+    $("button.save_view").click(function() {
+        save_view($("#view").html());
     });
 
 });

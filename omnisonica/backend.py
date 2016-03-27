@@ -2,7 +2,10 @@ from clients.datatype import Album, Artist, Track
 from clients import spotify_client
 import random
 import os
+import logging
 import simplejson as json
+
+log = logging.getLogger(__name__)
 
 consonants = ['b','c','d','f','g','h','j','k','l','m',
               'n','p','q','r','s','t','v','w','x','z']
@@ -98,6 +101,13 @@ def get_views(user_id=None):
     
 def search_tracks(query):
     return spotify.search_tracks(query)
-                    
+    
+def save_view(view_name, data):
+    tracks = data.values()
+    tracks.sort(key=lambda x: x['idx'])
+    with open('data/%s.json' % view_name, 'wb') as f:
+        for track in tracks:
+            track.pop('idx')
+            f.write('%s\n' % json.dumps(track))
    
 get_tracks = get_tracks_from_file 

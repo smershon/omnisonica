@@ -27,8 +27,14 @@ def tracks(view=None):
     
 @app.route('/j/search/tracks')
 def search_tracks():
-    search_term = request.args.get('term');
+    search_term = request.args.get('term')
     return jsonify({'tracks': [x._to_dict() for x in backend.search_tracks(search_term)]})
+    
+@app.route('/save_view/<view_name>', methods=['POST'])
+def save_view(view_name):
+    data = request.json
+    backend.save_view(view_name, data)
+    return jsonify({'result': 'saved'})
     
 if __name__ == '__main__':
     app.run()
