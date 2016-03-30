@@ -5,6 +5,7 @@ $(function() {
                 "<td class=\"title\"><%= track.t %></td>" + 
                 "<td class=\"artist\"><%= track.a.n %></td>" +
                 "<td class=\"album\"><%= track.c.t %></td>" +
+                "<td class=\"duration\"><%= track.d %></td>" +
                 "<td class=\"release_date\"><%= track.c.r %></td>" +
                 "<td><button class=\"<%= action %>\"><%= action %></button></td>" +
                 "</tr>";
@@ -17,6 +18,7 @@ $(function() {
                            "<td class=\"title\"><%= track.t %></td>" + 
                            "<td class=\"artist\"><%= track.a.n %></td>" +
                            "<td class=\"album\"><%= track.c.t %></td>" +
+                           "<td class=\"duration\"><%= track.d %></td>" +
                            "<td class=\"release_date\"><%= track.c.r %></td>" +
                            "<td><button class=\"<%= action %>\"><%= action %></button></td>" +
                            "</tr>";
@@ -36,6 +38,7 @@ $(function() {
         return {
             "u": row.find(".uid").html(),
             "t": row.find(".title").html(),
+            "d": row.find(".duration").html(),
             "a": {
                 "n": row.find(".artist").html()
             },
@@ -133,9 +136,15 @@ $(function() {
         $(table + " .data").html("");
         _(trackArray).forEach(function(t) {
             if (show_track(t)) {
-                $(table + " .data").append(compiled({"track": t, "row_id": t.u.split(":").pop()}));
+                $(table + " .data").append(compiled({
+                    "track": t,
+                    "action": "remove", 
+                    "row_id": t.u.split(":").pop()}));
             }
-        });   
+        });
+        $(table + " .data .remove").click(function() {
+            remove_track($(this), table + " .data");
+        });    
     }
 
     function show_track_ids() {
@@ -167,6 +176,7 @@ $(function() {
         make_sortable(selector, ".column_track", function(t) { return t.t; });
         make_sortable(selector, ".column_artist", function(t) { return t.a.n; });
         make_sortable(selector, ".column_album", function(t) { return t.c.t; });
+        make_sortable(selector, ".column_duration", function(t) { return t.d; });
         make_sortable(selector, ".column_release", function(t) { return t.c.r; });
     }
     
