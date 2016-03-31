@@ -9,6 +9,10 @@ table {
     border-collapse: collapse;
 }
 
+table.search_results_table {
+    width: 100%;
+}
+
 th, td {
     border-bottom: 1px solid #00cfcf;
 }
@@ -19,4 +23,13 @@ th, td {
 
 .trackrow:hover {
     background-color: #7fffff;
+}
+
+.searchrow {
+    background-color: #ffffff;
+    color: #7f7f7f;
+}
+
+.searchrow:hover {
+    background-color: #dfdfdf;
 }

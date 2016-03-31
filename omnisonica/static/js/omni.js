@@ -7,13 +7,14 @@ $(function() {
                 "<td class=\"album\"><%= track.c.t %></td>" +
                 "<td class=\"duration\"><%= track.d %></td>" +
                 "<td class=\"release_date\"><%= track.c.r %></td>" +
-                "<td><button class=\"<%= action %>\"><%= action %></button></td>" +
+                "<td><button class=\"<%= action %>\"><%= action %></button>" +
+                    "<button class=\"search\">search</button></td>" +
                 "</tr>";
 
     var compiled = _.template(tmplt);
     var tracks = {};
     
-    var search_row_tmplt = "<tr class=\"trackrow\" id=\"<%= row_id %>\">" +
+    var search_row_tmplt = "<tr class=\"trackrow searchrow\" id=\"<%= row_id %>\">" +
                            "<td class=\"uid\"><%= track.u %></td>" +
                            "<td class=\"title\"><%= track.t %></td>" + 
                            "<td class=\"artist\"><%= track.a.n %></td>" +
@@ -53,7 +54,6 @@ $(function() {
     function add_track(button, selector) {
         var row = button.parent().parent();
         var track = track_from_row(row);
-        console.log(track);
         tracks[track.u.split(":").pop()] = track;
         $(selector).append(compiled({
             "track": track,
@@ -78,21 +78,46 @@ $(function() {
         });
     }
     
-    function insert_search_results(selector, found_tracks, destination) {
-        var results_html = "";
-        _(found_tracks).each(function(t,i) {
-            var add_remove = (tracks[t.u.split(":").pop()]) ? "remove" : "add";
+    function inject_search_results(div, found_tracks, destination, callback) {
+        var results_html = "<button class=\"hide_results\" style=\"float: right;\">hide</button><br/>" +
+                           "<table class=\"search_results_table\"><tbody>"
+        _(found_tracks).each(function(t) {
+            var uid = t.u.split(":").pop();
             results_html += search_row({
                 "track": t,
-                "action": add_remove,
-                "row_id": t.u.split(":").pop()});
+                "action": tracks[uid] ? "remove" : "add",
+                "row_id": "search_" + uid
+            });
         });
-        $(selector).html(results_html);
-        $(selector + " .add").click(function() {
+        results_html += "</tbody></table>";
+        div.html(results_html);
+        div.find(".add").click(function() {
             add_track($(this), destination);
         });
-        $(selector + " .remove").click(function() {
+        div.find(".remove").click(function() {
             remove_track($(this), destination);
+        });
+        div.find(".hide_results").click(function() {
+            div.html("");
+            if (callback) { callback(); }
+        });
+    }
+    
+    function inline_search_results(row, destination) {
+        var track = track_from_row(row);
+        var search_term = track.a.n + " " + track.t;
+        $.get("/j/search/tracks", { "term": search_term }, function(data) {
+            var div = $("<tr><td colspan=\"6\"></td></tr>");
+            div.insertAfter(row);
+            inject_search_results(div.find("td"), data.tracks, destination, function() {
+                div.remove();
+            });
+        });
+    }
+
+    function delete_search_results(row) {
+        row.nextUntil(".trackrow:not(.searchrow)").each(function(i,t) {
+            t.remove();
         });
     }
 
@@ -109,7 +134,10 @@ $(function() {
             });
             $(table_selector + " .remove").click(function() {
                 remove_track($(this), table_selector);
-            }); 
+            });
+            $(table_selector + " .search").click(function() {
+                inline_search_results($(this).parent().parent());
+            });
         });  
     }
     
@@ -144,6 +172,9 @@ $(function() {
         });
         $(table + " .data .remove").click(function() {
             remove_track($(this), table + " .data");
+        });
+        $(table + " .data .search").click(function() {
+            inline_search_results($(this).parent().parent(), table + " .data");
         });    
     }
 
@@ -180,12 +211,10 @@ $(function() {
         make_sortable(selector, ".column_release", function(t) { return t.c.r; });
     }
     
-    function search_tracks(destination) {
-        var search_term = $("#track_search_input").val();
-        var rowtypes = ["even", "odd"];
+    function search_tracks(search_term, destination) {
         if (search_term) {
             $.get("/j/search/tracks", { "term": search_term }, function(data) {
-                insert_search_results("#searchtable .results", data.tracks, destination);
+                inject_search_results($("#search_results"), data.tracks, destination);
             });
         }
     }
@@ -210,7 +239,7 @@ $(function() {
         show_track_ids();
     });
     $("button.track_search").click(function() {
-        search_tracks("#tracktable .data");
+        search_tracks($("#track_search_input").val(), "#tracktable .data");
     });
     $("button.save_view").click(function() {
         save_view($("#view").html());
