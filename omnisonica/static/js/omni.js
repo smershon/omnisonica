@@ -1,5 +1,9 @@
 $(function() {
 
+    // 1965-1971: 136 -> 186
+    // 1972-1978: 205 -> 257
+    // 1979-1985: 150 -> 243
+
     var tmplt = "<tr class=\"trackrow\" id=\"<%= row_id %>\">" +
                 "<td class=\"uid\"><%= track.u %></td>" +
                 "<td class=\"title\"><%= track.t %></td>" + 
@@ -103,9 +107,25 @@ $(function() {
         });
     }
     
+    function search_term_for_track(track) {
+        var artist_term = track.a.n.split(" ").filter(function(s) {
+            return (s !== "&amp;");
+        }).join(" ");
+        var track_term = "";
+        var tokens = track.t.split(" ");
+        for (i=0; i < tokens.length; i++) {
+            var token = tokens[i];
+            if (token.startsWith("-")) { break; }
+            if (token.startsWith("(") && i > 0) { break; }
+            track_term += " " + token;
+        }
+        console.log(track_term);
+        return artist_term + track_term;
+    }
+    
     function inline_search_results(row, destination) {
         var track = track_from_row(row);
-        var search_term = track.a.n + " " + track.t;
+        var search_term = search_term_for_track(track);
         $.get("/j/search/tracks", { "term": search_term }, function(data) {
             var div = $("<tr><td colspan=\"6\"></td></tr>");
             div.insertAfter(row);
