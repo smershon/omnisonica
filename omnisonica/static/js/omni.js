@@ -29,6 +29,9 @@ $(function() {
                            "</tr>";
     var search_row = _.template(search_row_tmplt);
     
+    var meta_tmplt = "<%= count %> / <%= hours %>:<%= minutes %>:<%= seconds %>"
+    var meta_compiled = _.template(meta_tmplt);
+    
     function next_idx() {
         var idx = 0;
         _(Object.keys(tracks)).each(function(key) {
@@ -53,6 +56,36 @@ $(function() {
             },
             "idx": next_idx()
         }        
+    }
+    
+    function render_meta(count, total_seconds) {
+        return meta_compiled({
+            "count": count,
+            "hours":Math.floor(total_seconds/3600),
+            "minutes": pad(Math.floor((total_seconds%3600)/60), 2),
+            "seconds": pad(Math.round(total_seconds%60), 2)});
+    }
+    
+    function pad(n, width) {
+        n = n + '';
+        return n.length >= width ? n : new Array(width - n.length + 1).join("0") + n;
+    }
+    
+    function reload_meta(selector) {
+        var total_tracks = 0;
+        var total_time = 0;
+        var shown_tracks = 0;
+        var shown_time = 0;
+        Object.keys(tracks).forEach(function(key) {
+            total_tracks += 1;
+            total_time += parseInt(tracks[key].d)/1000;
+        });
+        $(selector + " .trackrow:not(.searchrow)").each(function(i, row) {
+            shown_tracks += 1;
+            shown_time += parseInt($(row).find(".duration").html())/1000;
+        });
+        $(".shown_track_meta").html("shown: " + render_meta(shown_tracks, shown_time));
+        $(".total_track_meta").html("total: " + render_meta(total_tracks, total_time));
     }
     
     function add_track(button, selector) {
@@ -80,6 +113,7 @@ $(function() {
         button.click(function() {
             add_track(button, selector);
         });
+        reload_meta(selector);
     }
     
     function inject_search_results(div, found_tracks, destination, callback) {
@@ -158,6 +192,7 @@ $(function() {
             $(table_selector + " .search").click(function() {
                 inline_search_results($(this).parent().parent());
             });
+            reload_meta(table_selector);
         });  
     }
     
@@ -195,7 +230,8 @@ $(function() {
         });
         $(table + " .data .search").click(function() {
             inline_search_results($(this).parent().parent(), table + " .data");
-        });    
+        }); 
+        reload_meta(table + " .data");   
     }
 
     function show_track_ids() {
