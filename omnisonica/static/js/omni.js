@@ -9,7 +9,7 @@ $(function() {
                 "<td class=\"title\"><%= track.t %></td>" + 
                 "<td class=\"artist\"><%= track.a.n %></td>" +
                 "<td class=\"album\"><%= track.c.t %></td>" +
-                "<td class=\"duration\"><%= track.d %></td>" +
+                "<td class=\"duration\"><%= duration %></td>" +
                 "<td class=\"release_date\"><%= track.c.r %></td>" +
                 "<td><button class=\"<%= action %>\"><%= action %></button>" +
                     "<button class=\"search\">search</button></td>" +
@@ -23,14 +23,11 @@ $(function() {
                            "<td class=\"title\"><%= track.t %></td>" + 
                            "<td class=\"artist\"><%= track.a.n %></td>" +
                            "<td class=\"album\"><%= track.c.t %></td>" +
-                           "<td class=\"duration\"><%= track.d %></td>" +
+                           "<td class=\"duration\"><%= duration %></td>" +
                            "<td class=\"release_date\"><%= track.c.r %></td>" +
                            "<td><button class=\"<%= action %>\"><%= action %></button></td>" +
                            "</tr>";
     var search_row = _.template(search_row_tmplt);
-    
-    var meta_tmplt = "<%= count %> / <%= hours %>:<%= minutes %>:<%= seconds %>"
-    var meta_compiled = _.template(meta_tmplt);
     
     function next_idx() {
         var idx = 0;
@@ -58,17 +55,21 @@ $(function() {
         }        
     }
     
-    function render_meta(count, total_seconds) {
-        return meta_compiled({
-            "count": count,
-            "hours":Math.floor(total_seconds/3600),
-            "minutes": pad(Math.floor((total_seconds%3600)/60), 2),
-            "seconds": pad(Math.round(total_seconds%60), 2)});
-    }
-    
-    function pad(n, width) {
+    function pad(width, n) {
         n = n + '';
         return n.length >= width ? n : new Array(width - n.length + 1).join("0") + n;
+    }
+    
+    function format_time(total_seconds) {
+        total_seconds = Math.round(total_seconds/1000);
+        var hours = Math.floor(total_seconds/3600);
+        var minutes = Math.floor((total_seconds%3600)/60);
+        var seconds = total_seconds%60;
+        if (hours) {
+            return hours + ":" + pad(2, minutes) + ":" + pad(2, seconds);
+        } else {
+            return minutes + ":" + pad(2, seconds);
+        }
     }
     
     function reload_meta(selector) {
@@ -78,14 +79,14 @@ $(function() {
         var shown_time = 0;
         Object.keys(tracks).forEach(function(key) {
             total_tracks += 1;
-            total_time += parseInt(tracks[key].d)/1000;
+            total_time += parseInt(tracks[key].d);
         });
         $(selector + " .trackrow:not(.searchrow)").each(function(i, row) {
             shown_tracks += 1;
-            shown_time += parseInt($(row).find(".duration").html())/1000;
+            shown_time += parseInt($(row).find(".duration").html());
         });
-        $(".shown_track_meta").html("shown: " + render_meta(shown_tracks, shown_time));
-        $(".total_track_meta").html("total: " + render_meta(total_tracks, total_time));
+        $(".shown_track_meta").html("shown: " + shown_tracks + " / " + format_time(shown_time));
+        $(".total_track_meta").html("total: " + total_tracks + " / " + format_time(total_time));
     }
     
     function add_track(button, selector) {
@@ -95,6 +96,7 @@ $(function() {
         $(selector).append(compiled({
             "track": track,
             "action": "remove",
+            "duration": format_time(track.t),
             "row_id": track.u.split(":").pop()}));
         button.html("remove");
         button.unbind("click");
@@ -124,6 +126,7 @@ $(function() {
             results_html += search_row({
                 "track": t,
                 "action": tracks[uid] ? "remove" : "add",
+                "duration": format_time(t.d),
                 "row_id": "search_" + uid
             });
         });
@@ -183,7 +186,8 @@ $(function() {
                 tracks[t.u.split(":").pop()] = t;
                 $(table_selector).append(compiled({
                     "track": t,
-                    "action": "remove", 
+                    "action": "remove",
+                    "duration": format_time(t.d), 
                     "row_id": t.u.split(":").pop()}));
             });
             $(table_selector + " .remove").click(function() {
@@ -221,7 +225,8 @@ $(function() {
             if (show_track(t)) {
                 $(table + " .data").append(compiled({
                     "track": t,
-                    "action": "remove", 
+                    "action": "remove",
+                    "duration": format_time(t.d), 
                     "row_id": t.u.split(":").pop()}));
             }
         });
