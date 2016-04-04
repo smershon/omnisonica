@@ -78,11 +78,11 @@ TrackTable.prototype = {
                 $(this).attr("sorting", "asc");
                 table.tracks = _.sortBy(table.tracks, function(uri) {
                     return sort_fn(table.track_data[uri]); });
-                table.tracks.reverse();
             } else if (sorting === "asc") {
                 $(this).attr("sorting", "desc");
                 table.tracks = _.sortBy(table.tracks, function(uri) {
                     return sort_fn(table.track_data[uri]); });
+                table.tracks.reverse();
             } else {
                 $(this).removeAttr("sorting");
                 table.tracks = _.sortBy(table.tracks, function(uri) {
@@ -100,6 +100,7 @@ TrackTable.prototype = {
             _(data.tracks).each(function(t) {
                 t.idx = idx++;
                 t.v = true;
+                t.d = parseInt(t.d);
                 var uid = t.u.split(":").pop();
                 table.tracks.push(uid);
                 table.track_data[uid] = t;
