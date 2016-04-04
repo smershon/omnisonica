@@ -295,7 +295,7 @@ $(function() {
     
 
     sortable_table("#tracktable");
-    load_tracks($("#view").html(), "#tracktable .data");
+    //load_tracks($("#view").html(), "#tracktable .data");
     $("#get_track_ids").click(function() {
         show_track_ids();
     });
@@ -305,5 +305,8 @@ $(function() {
     $("button.save_view").click(function() {
         save_view($("#view").html());
     });
+    
+    var tt = new TrackTable($(".data_main"));
+    tt.load_tracks_from_url("j/tracks/" + $("#view").html());
 
 });
