@@ -239,11 +239,11 @@ $(function() {
         reload_meta(table + " .data");   
     }
 
-    function show_track_ids() {
+    function show_track_ids(track_list) {
         var w = window.open("", "Test");
         w.document.open();
-        $("#tracktable .data .trackrow").each(function(key, value) {
-            w.document.write($(this).find(".uid").html() + "<br/>");
+        _(track_list).each(function(t) {
+            w.document.write(t.u + "<br/>");
         });
         w.document.close();
     }
@@ -296,9 +296,6 @@ $(function() {
 
     sortable_table("#tracktable");
     //load_tracks($("#view").html(), "#tracktable .data");
-    $("#get_track_ids").click(function() {
-        show_track_ids();
-    });
     $("button.track_search").click(function() {
         search_tracks($("#track_search_input").val(), "#tracktable .data");
     });
@@ -308,5 +305,8 @@ $(function() {
     
     var tt = new TrackTable($(".data_main"));
     tt.load_tracks_from_url("j/tracks/" + $("#view").html());
+    $("#get_track_ids").click(function() {
+        show_track_ids(tt.get_tracks(true));
+    });
 
 });

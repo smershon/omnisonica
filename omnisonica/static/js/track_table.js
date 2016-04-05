@@ -26,7 +26,7 @@ var TrackTable = function(div) {
 TrackTable.prototype = {
     
     "row_template": _.template(`
-        <tr class="trackrow" uid="<%= uid %>">
+        <tr class="trackrow" uid="<%= uid %>" style="display:<%= visibility %>;">
           <td class="uid"><%= track.u %></td>
           <td class="title"><%= track.t %></td>
           <td class="artist"><%= track.a.n %></td>
@@ -63,11 +63,37 @@ TrackTable.prototype = {
     },
     
     "attach_header_listeners": function() {
-        this.make_sortable(".column_track", function(t) { return t.t; });
-        this.make_sortable(".column_artist", function(t) { return t.a.n; });
-        this.make_sortable(".column_album", function(t) { return t.c.t; });
-        this.make_sortable(".column_duration", function(t) { return t.d; });
-        this.make_sortable(".column_release", function(t) { return t.c.r; });        
+        var table = this;
+        table.make_sortable(".column_track", function(t) { return t.t; });
+        table.make_sortable(".column_artist", function(t) { return t.a.n; });
+        table.make_sortable(".column_album", function(t) { return t.c.t; });
+        table.make_sortable(".column_duration", function(t) { return t.d; });
+        table.make_sortable(".column_release", function(t) { return t.c.r; });
+        table.div.find("th input").keypress(function(e) {
+            if (e.which == 13) {
+                table.filter_display();
+            }
+        });
+    },
+    
+    "filter_display": function() {
+        var table = this;
+        var max_date = table.div.find("#max_date").val();
+        var min_date = table.div.find("#min_date").val();
+        _(table.tracks).each(function(uid) {
+            var track = table.track_data[uid];
+            var row = table.div.find("tr[uid='" + uid + "']");
+            if (max_date && track.c.r > max_date) {
+                track.v = false;
+                row.hide();
+            } else if (min_date && track.c.r < min_date) {
+                track.v = false;
+                row.hide();
+            } else {
+                track.v = true;
+                row.show();
+            }
+        });
     },
     
     "make_sortable": function(column, sort_fn) {
@@ -119,6 +145,7 @@ TrackTable.prototype = {
                 "track": track,
                 "uid": uid,
                 "action": "remove",
+                "visibility": track.v ? "table-row" : "none",
                 "duration": format_time(track.d)
             });
         });
@@ -138,14 +165,21 @@ TrackTable.prototype = {
     },
     
     "remove_track": function(uid) {
-        console.log(uid);
-        console.log(this.track_data[uid]);
         delete(this.track_data[uid]);
         var idx = this.tracks.indexOf(uid);
         if (idx > -1) {
             this.tracks.splice(idx, 1);
         }
         this.div.find("tr[uid='" + uid + "']").remove();
+    },
+    
+    "get_tracks": function(visible) {
+        var returned_tracks = [];
+        for (i=0; i<this.tracks.length; i++) {
+           var t = this.track_data[this.tracks[i]]
+           if (!visible || t.v) { returned_tracks.push(t); } 
+        }
+        return returned_tracks;
     },
     
     "next_idx": function() {
