@@ -294,11 +294,12 @@ $(function() {
     }
     
 
-    sortable_table("#tracktable");
+    //sortable_table("#tracktable");
     //load_tracks($("#view").html(), "#tracktable .data");
+    /*
     $("button.track_search").click(function() {
         search_tracks($("#track_search_input").val(), "#tracktable .data");
-    });
+    });*/
     $("button.save_view").click(function() {
         save_view($("#view").html());
     });
@@ -308,5 +309,15 @@ $(function() {
     $("#get_track_ids").click(function() {
         show_track_ids(tt.get_tracks(true));
     });
+    $("button.track_search").click(function() {
+        var search_term = $("#track_search_input").val();
+        console.log(search_term);
+        if (!search_term) { return; }
+        $("#search_results").html("<div class=\"search_inner\"></div>")
+        var st = new SearchTable($("#search_results .search_inner"), tt);
+        st.search_from_url("j/search/tracks", { "term": search_term });
+    });
+    
+    
 
 });

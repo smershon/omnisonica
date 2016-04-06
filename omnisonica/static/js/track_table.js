@@ -16,6 +16,7 @@ function format_time(milliseconds) {
 }
 
 var TrackTable = function(div) {
+    this.table_type = "TrackTable";
     this.div = div;
     this.tracks = [];
     this.track_data = {};
@@ -34,7 +35,7 @@ TrackTable.prototype = {
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
           <td>
-            <button class="<%= action %>"><%= action %></button>
+            <button class="remove">remove</button>
             <button class="search">search</button>
           </td>
         </tr>
@@ -43,19 +44,21 @@ TrackTable.prototype = {
     "insert_html": function() {
         this.div.html(`
             <table class="tracktable">
-              <tr class="header">
-                <th class="column_uid">uid</th>
-                <th class="column_track"><button class="sort_button">title</button></th>
-                <th class="column_artist"><button class="sort_button">artist</button></th>
-                <th class="column_album"><button class="sort_button">album</button></th>
-                <th class="column_duration"><button class="sort_button">duration</button></th>
-                <th class="column_release">
-                  <button class="sort_button">release date</button><br/>
-                  Max:<input type="text" id="max_date"></input><br/>
-                  Min:<input type="text" id="min_date"></input>
-                </th>
-                <th class="column_action">action</th>
-              </tr>
+              <thead>
+                <tr class="header">
+                  <th class="column_uid">uid</th>
+                  <th class="column_track"><button class="sort_button">title</button></th>
+                  <th class="column_artist"><button class="sort_button">artist</button></th>
+                  <th class="column_album"><button class="sort_button">album</button></th>
+                  <th class="column_duration"><button class="sort_button">duration</button></th>
+                  <th class="column_release">
+                    <button class="sort_button">release date</button><br/>
+                    Max:<input type="text" id="max_date"></input><br/>
+                    Min:<input type="text" id="min_date"></input>
+                  </th>
+                  <th class="column_action">action</th>
+                </tr>
+              </thead>
               <tbody class="data">
               </tbody>
             </table>
@@ -144,7 +147,6 @@ TrackTable.prototype = {
             track_html += table.row_template({
                 "track": track,
                 "uid": uid,
-                "action": "remove",
                 "visibility": track.v ? "table-row" : "none",
                 "duration": format_time(track.d)
             });
@@ -190,6 +192,105 @@ TrackTable.prototype = {
             }
         });
         return idx + 1;
+    },
+    
+    "log_me": function() {
+        console.log(this.table_type + " " + this.div.selector);
     }
+    
+};
+
+var SearchTable = function(div, target_table) {
+    this.table_type = "SearchTable";
+    this.div = div;
+    this.target_table = target_table;
+    this.tracks = [];
+    this.track_data = {};
+    this.insert_html();
+    //this.attach_header_listeners();    
+};
+
+SearchTable.prototype = {
+  
+    "row_template": _.template(`
+        <tr class="searchrow" uid="<%= uid %>">
+          <td class="uid"><%= track.u %></td>
+          <td class="title"><%= track.t %></td>
+          <td class="artist"><%= track.a.n %></td>
+          <td class="album"><%= track.c.t %></td>
+          <td class="duration"><%= duration %></td>
+          <td class="release_date"><%= track.c.r %></td>
+          <td><button class="<%= action %>"><%= action %></button></td>
+        </tr>
+    `),
+  
+    "insert_html": function() {
+        this.div.html(`
+            <table class="searchtable">
+              <thead>
+                <tr class="header">
+                  <th class="column_uid">uid</th>
+                  <th class="column_track"><button class="sort_button">title</button></th>
+                  <th class="column_artist"><button class="sort_button">artist</button></th>
+                  <th class="column_album"><button class="sort_button">album</button></th>
+                  <th class="column_duration"><button class="sort_button">duration</button></th>
+                  <th class="column_release"><button class="sort_button">release date</button><br/></th>
+                  <th class="column_action">action</th>
+                </tr>
+              </thead>
+              <tbody class="data">
+              </tbody>
+            </table>
+        `);
+    },
+    
+    "reset_display": function() {
+        var table = this;
+        track_html = "";
+        _(table.tracks).each(function(uid) {
+            var track = table.track_data[uid];
+            track_html += table.row_template({
+                "track": track,
+                "uid": uid,
+                "duration": format_time(track.d)
+            });
+        });
+        table.div.find(".data").html(track_html);
+    },
+ 
+    "inject_search_results": function(tracks) {
+        var table = this;
+        var results_html = `<button class="hide_results" style="float: right;">hide</button><br/>
+                            <table class="search_results_table"><tbody>`
+        _(tracks).each(function(t) {
+            var uid = t.u.split(":").pop();
+            results_html += table.row_template({
+                "track": t,
+                "action": table.target_table.tracks[uid] ? "remove" : "add",
+                "duration": format_time(t.d),
+                "uid": uid
+            });
+        });
+        results_html += "</tbody></table>";
+        table.div.html(results_html);
+        table.div.find(".add").click(function() {
+            console.log("add_track");
+        });
+        table.div.find(".remove").click(function() {
+            console.log("remove_track");
+        });
+        table.div.find(".hide_results").click(function() {
+            table.div.html("");
+        });  
+    },
+    
+    "search_from_url": function(url, form) {
+        var table = this;
+        $.get(url, form, function(data) {
+            table.inject_search_results(data.tracks);
+        });
+    },
+  
+    "log_me": TrackTable.prototype.log_me
     
 };
