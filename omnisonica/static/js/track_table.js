@@ -15,6 +15,21 @@ function format_time(milliseconds) {
     }
 }
 
+function search_term_for_track(track) {
+    var artist_term = track.a.n.split(" ").filter(function(s) {
+        return (s !== "&amp;");
+    }).join(" ");
+    var track_term = "";
+    var tokens = track.t.split(" ");
+    for (i=0; i < tokens.length; i++) {
+        var token = tokens[i];
+        if (token.startsWith("-")) { break; }
+        if (token.startsWith("(") && i > 0) { break; }
+        track_term += " " + token;
+    }
+    return artist_term + track_term;
+}
+
 var TrackTable = function(div) {
     this.table_type = "TrackTable";
     this.div = div;
@@ -166,6 +181,18 @@ TrackTable.prototype = {
         });
     },
     
+    "add_track": function(track) {
+        var idx = this.next_idx();
+        track.idx = idx;
+        track.v = true;
+        var uid = track.u.split(":").pop();
+        this.tracks.push(uid);
+        this.track_data[uid] = track;
+        this.reset_display();
+        this.reset_row_listeners();
+        this.filter_display();
+    },
+    
     "remove_track": function(uid) {
         delete(this.track_data[uid]);
         var idx = this.tracks.indexOf(uid);
@@ -185,10 +212,11 @@ TrackTable.prototype = {
     },
     
     "next_idx": function() {
+        var table = this;
         var idx = 0;
         _(this.tracks).each(function(uri) {
-            if (this.track_data[uri].idx > idx) {
-                idx = this.track_data[uri].idx;
+            if (table.track_data[uri].idx > idx) {
+                idx = table.track_data[uri].idx;
             }
         });
         return idx + 1;
@@ -200,10 +228,11 @@ TrackTable.prototype = {
     
 };
 
-var SearchTable = function(div, target_table) {
+var SearchTable = function(div, manager) {
     this.table_type = "SearchTable";
     this.div = div;
-    this.target_table = target_table;
+    this.manager = manager;
+    this.manager.tables.push(this);
     this.tracks = [];
     this.track_data = {};
     this.insert_html();
@@ -264,9 +293,11 @@ SearchTable.prototype = {
                             <table class="search_results_table"><tbody>`
         _(tracks).each(function(t) {
             var uid = t.u.split(":").pop();
+            table.tracks.push(uid);
+            table.track_data[uid] = t;
             results_html += table.row_template({
                 "track": t,
-                "action": table.target_table.tracks[uid] ? "remove" : "add",
+                "action": table.manager.target_table.track_data[uid] ? "remove" : "add",
                 "duration": format_time(t.d),
                 "uid": uid
             });
@@ -274,14 +305,22 @@ SearchTable.prototype = {
         results_html += "</tbody></table>";
         table.div.html(results_html);
         table.div.find(".add").click(function() {
-            console.log("add_track");
+            table.add_track($(this).parent().parent().attr("uid"));
         });
         table.div.find(".remove").click(function() {
-            console.log("remove_track");
+            table.remove_track($(this).parent().parent().attr("uid"));
         });
         table.div.find(".hide_results").click(function() {
             table.div.html("");
         });  
+    },
+    
+    "add_track": function(uid) {
+        this.manager.target_table.add_track(this.track_data[uid]);
+    },
+    
+    "remove_track": function(uid) {
+        this.manager.target_table.remove_track(uid);
     },
     
     "search_from_url": function(url, form) {
@@ -293,4 +332,9 @@ SearchTable.prototype = {
   
     "log_me": TrackTable.prototype.log_me
     
+};
+
+var SearchTableManager = function(target_table) {
+    this.tables = [];
+    this.target_table = target_table;
 };
