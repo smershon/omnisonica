@@ -94,22 +94,35 @@ TrackTable.prototype = {
         });
     },
     
+    "compile_filter": function() {
+        return {
+            "max_date": this.div.find("#max_date").val(),
+            "min_date": this.div.find("#min_date").val()
+        }
+    },
+    
+    "show_track": function(uid, params) {
+        var track = this.track_data[uid];
+        if (params.min_date && track.c.r < params.min_date) {
+            return false;
+        }
+        if (params.max_date && track.c.r > params.max_date) {
+            return false;
+        }
+        return true;
+    },
+    
     "filter_display": function() {
         var table = this;
-        var max_date = table.div.find("#max_date").val();
-        var min_date = table.div.find("#min_date").val();
+        var params = table.compile_filter();
         _(table.tracks).each(function(uid) {
             var track = table.track_data[uid];
             var row = table.div.find("tr[uid='" + uid + "']");
-            if (max_date && track.c.r > max_date) {
-                track.v = false;
-                row.hide();
-            } else if (min_date && track.c.r < min_date) {
-                track.v = false;
-                row.hide();
-            } else {
-                track.v = true;
+            track.v = table.show_track(uid, params);
+            if (track.v) { 
                 row.show();
+            } else {
+                row.hide();
             }
         });
     },
