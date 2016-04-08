@@ -104,7 +104,7 @@ def search_tracks(query):
     
 def save_view(view_name, tracks):
     with open('data/%s.json' % view_name, 'wb') as f:
-        for track in tracks:
+        for track in sorted(tracks, key=lambda x: x['idx']):
             track.pop('idx')
             track.pop('v')
             f.write('%s\n' % json.dumps(track))

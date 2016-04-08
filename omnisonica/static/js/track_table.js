@@ -229,10 +229,12 @@ TrackTable.prototype = {
         var uid = row.attr("uid");
         var track = table.track_data[uid];
         var search_term = search_term_for_track(track);
-        var div = $("<tr><td colspan=\"6\"></td></tr>");
+        var div = $(`<tr><td colspan="6"></td></tr>`);
         div.insertAfter(row);
-        var st = new SearchTable(div, this.search_manager);
-        st.search_from_url("j/search/tracks", { "term": search_term });      
+        var st = new SearchTable(div.find("td"), this.search_manager);
+        st.search_from_url("j/search/tracks", { "term": search_term }, {
+            "on_hide": function() { div.remove(); }
+        });      
     },
     
     "get_tracks": function(visible) {
@@ -352,10 +354,11 @@ SearchTable.prototype = {
         table.div.find(".data").html(track_html);
     },
  
-    "inject_search_results": function(tracks) {
+    "inject_search_results": function(tracks, fns) {
         var table = this;
         var results_html = `<button class="hide_results" style="float: right;">hide</button><br/>
-                            <table class="search_results_table"><tbody>`
+                            <table class="search_results_table"><tbody>`;
+        if (fns.on_pre) { fns.pre(); }
         _(tracks).each(function(t) {
             var uid = t.u.split(":").pop();
             table.tracks.push(uid);
@@ -366,17 +369,22 @@ SearchTable.prototype = {
                 "duration": format_time(t.d),
                 "uid": uid
             });
+            if (fns.on_success) { fns.on_success(); }
         });
         results_html += "</tbody></table>";
+        console.log(table.div);
         table.div.html(results_html);
         table.div.find(".add").click(function() {
             table.add_track($(this).parent().parent().attr("uid"));
+            if (fns.add) { fns.on_add(); }
         });
         table.div.find(".remove").click(function() {
             table.remove_track($(this).parent().parent().attr("uid"));
+            if (fns.remove) { fns.on_remove(); }
         });
         table.div.find(".hide_results").click(function() {
             table.div.html("");
+            if (fns.on_hide) { fns.on_hide(); }
         });  
     },
     
@@ -388,10 +396,10 @@ SearchTable.prototype = {
         this.manager.target_table.remove_track(uid);
     },
     
-    "search_from_url": function(url, form) {
+    "search_from_url": function(url, form, fns) {
         var table = this;
         $.get(url, form, function(data) {
-            table.inject_search_results(data.tracks);
+            table.inject_search_results(data.tracks, fns || {});
         });
     },
   
