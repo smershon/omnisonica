@@ -102,12 +102,11 @@ def get_views(user_id=None):
 def search_tracks(query):
     return spotify.search_tracks(query)
     
-def save_view(view_name, data):
-    tracks = data.values()
-    tracks.sort(key=lambda x: x['idx'])
+def save_view(view_name, tracks):
     with open('data/%s.json' % view_name, 'wb') as f:
         for track in tracks:
             track.pop('idx')
+            track.pop('v')
             f.write('%s\n' % json.dumps(track))
    
 get_tracks = get_tracks_from_file 
