@@ -204,15 +204,18 @@ TrackTable.prototype = {
     },
     
     "add_track": function(track) {
-        var idx = this.next_idx();
-        track.idx = idx;
-        track.v = true;
+        track.idx = this.next_idx();
         var uid = track.u.split(":").pop();
         this.tracks.push(uid);
         this.track_data[uid] = track;
-        this.reset_display();
+        track.v = this.show_track(uid, this.compile_filter());
+        this.div.find(".data").append(this.row_template({
+            "track": track,
+            "uid": uid,
+            "visibility": track.v ? "table-row" : "none",
+            "duration": format_time(track.d)
+        }));
         this.reset_row_listeners();
-        this.filter_display();
     },
     
     "remove_track": function(uid) {
@@ -231,10 +234,10 @@ TrackTable.prototype = {
         var search_term = search_term_for_track(track);
         var div = $(`<tr><td colspan="6"></td></tr>`);
         div.insertAfter(row);
-        var st = new SearchTable(div.find("td"), this.search_manager);
-        st.search_from_url("j/search/tracks", { "term": search_term }, {
+        var st = new SearchTable(div.find("td"), this.search_manager, {
             "on_hide": function() { div.remove(); }
-        });      
+        });
+        st.search_from_url("j/search/tracks", { "term": search_term });      
     },
     
     "get_tracks": function(visible) {
@@ -295,9 +298,10 @@ TrackTable.prototype = {
     
 };
 
-var SearchTable = function(div, manager) {
+var SearchTable = function(div, manager, fns) {
     this.table_type = "SearchTable";
     this.div = div;
+    this.fns = fns || {};
     this.manager = manager;
     this.manager.tables.push(this);
     this.tracks = [];
@@ -316,7 +320,7 @@ SearchTable.prototype = {
           <td class="album"><%= track.c.t %></td>
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
-          <td><button class="<%= action %>"><%= action %></button></td>
+          <td class="actions"><button class="<%= action %>"><%= action %></button></td>
         </tr>
     `),
   
@@ -354,12 +358,12 @@ SearchTable.prototype = {
         table.div.find(".data").html(track_html);
     },
  
-    "inject_search_results": function(tracks, fns) {
+    "inject_search_results": function(tracks) {
         var table = this;
         var results_html = `<button class="hide_results" style="float: right;">hide</button><br/>
                             <table class="search_results_table"><tbody>`;
                             
-        if (fns.on_pre) { fns.pre(); }
+        if (table.fns.on_pre) { table.fns.pre(); }
         
         _(tracks).each(function(t) {
             var uid = t.u.split(":").pop();
@@ -371,15 +375,15 @@ SearchTable.prototype = {
                 "duration": format_time(t.d),
                 "uid": uid
             });
-            if (fns.on_success) { fns.on_success(); }
+            if (table.fns.on_success) { table.fns.on_success(); }
         });
         
         results_html += "</tbody></table>";
         table.div.html(results_html);
-        table.reset_row_listeners(fns); 
+        table.reset_row_listeners(); 
     },
     
-    "reset_row_listeners": function(fns) {
+    "reset_row_listeners": function() {
         var table = this;
         
         table.div.find(".add").unbind("click");
@@ -388,18 +392,18 @@ SearchTable.prototype = {
         
         table.div.find(".add").click(function() {
             table.add_track($(this).parent().parent().attr("uid"));
-            if (fns.add) { fns.on_add(); }
+            if (table.fns.on_add) { table.fns.on_add(); }
         });
         
         table.div.find(".remove").click(function() {
             table.remove_track($(this).parent().parent().attr("uid"));
-            if (fns.remove) { fns.on_remove(); }
+            if (table.fns.on_remove) { table.fns.on_remove(); }
         });
         
         table.div.find(".hide_results").click(function() {
             table.div.html("");
             table.manager.remove_table(table);
-            if (fns.on_hide) { fns.on_hide(); }
+            if (table.fns.on_hide) { table.fns.on_hide(); }
         });         
     },
     
@@ -408,13 +412,27 @@ SearchTable.prototype = {
     },
     
     "remove_track": function(uid) {
-        this.manager.target_table.remove_track(uid);
+        this.manager.remove_track(uid);
     },
     
-    "search_from_url": function(url, form, fns) {
+    "mark_track_added": function(uid) {
+        this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
+            <button class="remove">remove</button>
+        `);
+        this.reset_row_listeners();
+    },
+    
+    "mark_track_removed": function(uid) {
+        this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
+            <button class="add">add</button>
+        `);
+        this.reset_row_listeners();       
+    },
+    
+    "search_from_url": function(url, form) {
         var table = this;
         $.get(url, form, function(data) {
-            table.inject_search_results(data.tracks, fns || {});
+            table.inject_search_results(data.tracks);
         });
     },
   
@@ -431,6 +449,17 @@ SearchTableManager.prototype = {
   
     "add_track": function(track) {
         this.target_table.add_track(track);
+        var uid = track.u.split(":").pop();
+        _(this.tables).each(function(t) {
+            t.mark_track_added(uid);
+        });
+    },
+    
+    "remove_track": function(uid) {
+        this.target_table.remove_track(uid);
+        _(this.tables).each(function(t) {
+            t.mark_track_removed(uid);
+        });
     },
     
     "remove_table": function(table) {
