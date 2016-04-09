@@ -358,7 +358,9 @@ SearchTable.prototype = {
         var table = this;
         var results_html = `<button class="hide_results" style="float: right;">hide</button><br/>
                             <table class="search_results_table"><tbody>`;
+                            
         if (fns.on_pre) { fns.pre(); }
+        
         _(tracks).each(function(t) {
             var uid = t.u.split(":").pop();
             table.tracks.push(uid);
@@ -371,25 +373,38 @@ SearchTable.prototype = {
             });
             if (fns.on_success) { fns.on_success(); }
         });
+        
         results_html += "</tbody></table>";
-        console.log(table.div);
         table.div.html(results_html);
+        table.reset_row_listeners(fns); 
+    },
+    
+    "reset_row_listeners": function(fns) {
+        var table = this;
+        
+        table.div.find(".add").unbind("click");
+        table.div.find(".remove").unbind("click");
+        table.div.find(".hide_results").unbind("click");
+        
         table.div.find(".add").click(function() {
             table.add_track($(this).parent().parent().attr("uid"));
             if (fns.add) { fns.on_add(); }
         });
+        
         table.div.find(".remove").click(function() {
             table.remove_track($(this).parent().parent().attr("uid"));
             if (fns.remove) { fns.on_remove(); }
         });
+        
         table.div.find(".hide_results").click(function() {
             table.div.html("");
+            table.manager.remove_table(table);
             if (fns.on_hide) { fns.on_hide(); }
-        });  
+        });         
     },
     
     "add_track": function(uid) {
-        this.manager.target_table.add_track(this.track_data[uid]);
+        this.manager.add_track(this.track_data[uid]);
     },
     
     "remove_track": function(uid) {
@@ -410,4 +425,19 @@ SearchTable.prototype = {
 var SearchTableManager = function(target_table) {
     this.tables = [];
     this.target_table = target_table;
+};
+
+SearchTableManager.prototype = {
+  
+    "add_track": function(track) {
+        this.target_table.add_track(track);
+    },
+    
+    "remove_table": function(table) {
+        var idx = this.tables.indexOf(table);
+        if (idx > -1) {
+            this.tables.splice(idx, 1);
+        }       
+    }
+    
 };
