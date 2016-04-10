@@ -96,8 +96,8 @@ TrackTable.prototype = {
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
           <td>
-            <button class="remove">remove</button>
-            <button class="search">search</button>
+            <button class="remove">X</button>
+            <button class="search">more</button>
           </td>
         </tr>
     `),
@@ -113,16 +113,16 @@ TrackTable.prototype = {
               <thead>
                 <tr class="header">
                   <th class="column_uid">uid</th>
-                  <th class="column_track"><button class="sort_button">title</button></th>
-                  <th class="column_artist"><button class="sort_button">artist</button></th>
-                  <th class="column_album"><button class="sort_button">album</button></th>
-                  <th class="column_duration"><button class="sort_button">duration</button></th>
+                  <th class="column_track"><button class="sort_button">Title</button></th>
+                  <th class="column_artist"><button class="sort_button">Artist</button></th>
+                  <th class="column_album"><button class="sort_button">Album</button></th>
+                  <th class="column_duration"><button class="sort_button">Duration</button></th>
                   <th class="column_release">
-                    <button class="sort_button">release date</button><br/>
-                    Max:<input type="text" id="max_date"></input><br/>
-                    Min:<input type="text" id="min_date"></input>
+                    <button class="sort_button">Release Date</button><br/>
+                    <div>Min: <input type="text" class="date" id="min_date"></input></div>
+                    <div>Max: <input type="text" class="date" id="max_date"></input></div>
                   </th>
-                  <th class="column_action">action</th>
+                  <th class="column_action">Action</th>
                 </tr>
               </thead>
               <tbody class="data">

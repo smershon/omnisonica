@@ -3,9 +3,11 @@ $(function() {
     function show_track_ids(track_list) {
         var w = window.open("", "Test");
         w.document.open();
+        w.document.write(`<body style="font-family:Courier;">`);
         _(track_list).each(function(t) {
             w.document.write(t.u + "<br/>");
         });
+        w.document.write(`</body>`);
         w.document.close();
     }
     

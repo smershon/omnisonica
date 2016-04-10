@@ -3,10 +3,40 @@ h3 {
     margin-left: 20px;
 }
 
+.omni_main {
+    margin-left: auto;
+    margin-right: auto;
+    width: 1300px;
+}
+
+button {
+    background-color: #007f00;
+    border: 2px;
+    border-color: #efffef;
+    border-radius: 4px;
+    color: #efffef;
+    padding: 2px 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 10px;   
+}
+
+button.sort_button {
+    font-size: 14px;
+}
+
+button.remove {
+    background-color: #7f0000;
+    color: #ffefef;
+}
+
 table {
     font-size: 10px;
     font-family: Verdana;
+    font-weight: 600;
     border-collapse: collapse;
+    width: 100%;
 }
 
 table.search_results_table {
@@ -14,15 +44,56 @@ table.search_results_table {
 }
 
 th, td {
-    border-bottom: 1px solid #00cfcf;
+    border-bottom: 1px solid #00cf00;
+    padding: 2px 5px;
+}
+
+th { 
+    background-color: #bfefbf;
+}
+
+th.column_uid {
+    display: none;
+}
+
+td.uid {
+    font-family: Courier;
+    font-weight: 300;
+    display: none;
+}
+
+td.title {
+    font-style: italic;
+    width: 30%;
+}
+
+td.artist {
+    width: 20%;
+}
+
+td.album {
+    width: 25%;
+}
+
+td.duration {
+    width: 10%;
+}
+
+td.release_date {
+    width: 10%;
+}
+
+td.actions {
+    width: 5%;
 }
 
 .trackrow {
-    background-color: #efffff;
+    background-color: #efffef;
+    color: #003f00;
 }
 
 .trackrow:hover {
-    background-color: #7fffff;
+    background-color: #9fef9f;
 }
 
 .searchrow {
@@ -32,4 +103,9 @@ th, td {
 
 .searchrow:hover {
     background-color: #dfdfdf;
+}
+
+input.date {
+    width: 80px;
+    background-color: #efffef;
 }
