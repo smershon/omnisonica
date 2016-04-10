@@ -103,8 +103,9 @@ def search_tracks(query):
     return spotify.search_tracks(query)
     
 def save_view(view_name, tracks):
+    tracks.sort(key=lambda x: x['idx'])
     with open('data/%s.json' % view_name, 'wb') as f:
-        for track in sorted(tracks, key=lambda x: x['idx']):
+        for track in tracks:
             track.pop('idx')
             track.pop('v')
             f.write('%s\n' % json.dumps(track))

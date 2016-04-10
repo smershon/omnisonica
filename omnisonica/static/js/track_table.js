@@ -17,7 +17,7 @@ function format_time(milliseconds) {
 
 function search_term_for_track(track) {
     var artist_term = track.a.n.split(" ").filter(function(s) {
-        return (s !== "&amp;");
+        return (s !== "&");
     }).join(" ");
     var track_term = "";
     var tokens = track.t.split(" ");
@@ -219,12 +219,35 @@ TrackTable.prototype = {
     },
     
     "remove_track": function(uid) {
-        delete(this.track_data[uid]);
+
         var idx = this.tracks.indexOf(uid);
         if (idx > -1) {
             this.tracks.splice(idx, 1);
         }
-        this.div.find("tr[uid='" + uid + "']").remove();
+        if (this.tracks.indexOf(uid) < 0) {
+            delete(this.track_data[uid]);
+        }
+        this.div.find("tr[uid='" + uid + "']").first().remove();
+    },
+    
+    "replace_track": function(uid, track) {
+        var new_uid = track.u.split(":").pop();
+        track.idx = this.track_data[uid].idx;
+        delete(this.track_data[uid])
+        var idx = this.tracks.indexOf(uid);
+        if (idx >= -1) { 
+            this.tracks[idx] = new_uid;
+        }
+        this.track_data[new_uid] = track;
+        track.v = this.show_track(new_uid, this.compile_filter());
+        var row = this.div.find(".trackrow[uid='" + uid + "']");
+        row.replaceWith(this.row_template({
+            "track": track,
+            "uid": new_uid,
+            "visibility": track.v ? "table-row" : "none",
+            "duration": format_time(track.d)
+        }));
+        this.reset_row_listeners();
     },
     
     inline_search_results: function(row) {
@@ -234,7 +257,7 @@ TrackTable.prototype = {
         var search_term = search_term_for_track(track);
         var div = $(`<tr><td colspan="6"></td></tr>`);
         div.insertAfter(row);
-        var st = new SearchTable(div.find("td"), this.search_manager, {
+        var st = new InlineSearchTable(div.find("td"), this.search_manager, uid, {
             "on_hide": function() { div.remove(); }
         });
         st.search_from_url("j/search/tracks", { "term": search_term });      
@@ -445,6 +468,70 @@ var SearchTableManager = function(target_table) {
     this.target_table = target_table;
 };
 
+var InlineSearchTable = function(div, manager, parent_uid, fns) {
+    this.table_type = "InlineSearchTable";
+    this.div = div;
+    this.parent_uid = parent_uid;
+    this.fns = fns || {};
+    this.manager = manager;
+    this.manager.tables.push(this);
+    this.tracks = [];
+    this.track_data = {};
+    this.insert_html();
+    //this.attach_header_listeners();    
+};
+
+InlineSearchTable.prototype = {
+
+    "row_template": _.template(`
+        <tr class="searchrow" uid="<%= uid %>">
+          <td class="uid"><%= track.u %></td>
+          <td class="title"><%= track.t %></td>
+          <td class="artist"><%= track.a.n %></td>
+          <td class="album"><%= track.c.t %></td>
+          <td class="duration"><%= duration %></td>
+          <td class="release_date"><%= track.c.r %></td>
+          <td class="actions">
+            <button class="<%= action %>"><%= action %></button>
+            <button class="replace">replace</button>
+          </td>
+        </tr>
+    `),
+    
+    "mark_track_added": function(uid) {
+        this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
+            <button class="remove">remove</button>
+            <button class="replace">replace</button>
+        `);
+        this.reset_row_listeners();
+    },
+    
+    "mark_track_removed": function(uid) {
+        this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
+            <button class="add">add</button>
+            <button class="replace">replace</button>
+        `);
+        this.reset_row_listeners();       
+    },
+    
+    "reset_row_listeners": function() {
+        var table = this;
+        SearchTable.prototype.reset_row_listeners.call(table);
+        table.div.find(".replace").click(function() {
+            var uid = $(this).parent().parent().attr("uid");
+            table.manager.replace_track(table.parent_uid, table.track_data[uid])
+            table.parent_uid = uid;
+        });
+    },
+    
+    "insert_html": SearchTable.prototype.insert_html,
+    "search_from_url": SearchTable.prototype.search_from_url,
+    "inject_search_results": SearchTable.prototype.inject_search_results,
+    "add_track": SearchTable.prototype.add_track,
+    "remove_track": SearchTable.prototype.remove_track
+    
+};
+
 SearchTableManager.prototype = {
   
     "add_track": function(track) {
@@ -467,6 +554,15 @@ SearchTableManager.prototype = {
         if (idx > -1) {
             this.tables.splice(idx, 1);
         }       
+    },
+    
+    "replace_track": function(uid, track) {
+        var new_uid = track.u.split(":").pop();
+        this.target_table.replace_track(uid, track);
+        _(this.tables).each(function(t) {
+            t.mark_track_added(new_uid);
+            t.mark_track_removed(uid);
+        });
     }
     
 };
