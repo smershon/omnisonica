@@ -15,6 +15,15 @@ function format_time(milliseconds) {
     }
 }
 
+function parse_time(timestr) {
+    if (!timestr) { return undefined; }
+    var milliseconds = 0;
+    _(timestr.split(":")).each(function(t) {
+        milliseconds = 60*milliseconds + parseInt(t);
+    });
+    return 1000*milliseconds;
+}
+
 function search_term_for_track(track) {
     var artist_term = track.a.n.split(" ").filter(function(s) {
         return (s !== "&");
@@ -28,6 +37,41 @@ function search_term_for_track(track) {
         track_term += " " + token;
     }
     return artist_term + track_term;
+}
+
+function track_slice(slice, tracks) {
+    var returned_tracks = [];
+    var total_time = 0;
+    while (total_time < slice) {
+        var track = tracks.splice(Math.floor(Math.random() * tracks.length), 1)[0];
+        returned_tracks.push(track);
+        total_time += track.d;
+    }
+    for(var i=0; i<50; i++) {
+        var track = returned_tracks.splice(Math.floor(Math.random() * returned_tracks.length), 1)[0];
+        total_time -= track.d;
+        tracks.push(track);
+        var next_track = closest_track_by_duration(tracks, slice - total_time);
+        if (next_track) {
+            returned_tracks.push(next_track);
+            total_time += next_track.d;
+        }
+    }
+    console.log(format_time(total_time));
+    return returned_tracks;
+}
+
+function closest_track_by_duration(tracks, duration) {
+    var best_track = undefined;
+    var best_delta = Math.abs(duration);
+    _(tracks).each(function(t) {
+        var delta = Math.abs(duration - t.d);
+        if (delta < best_delta) {
+            best_track = t;
+            best_delta = delta;
+        }
+    });
+    return best_track;
 }
 
 var TrackTable = function(div, meta_div) {
@@ -263,16 +307,19 @@ TrackTable.prototype = {
         st.search_from_url("j/search/tracks", { "term": search_term });      
     },
     
-    "get_tracks": function(visible) {
+    "get_tracks": function(visible, slice) {
         var table = this;
         var returned_tracks = [];
         _(table.tracks).each(function(uid) {
             var t = table.track_data[uid];
             if (!visible || t.v) { returned_tracks.push(t); }
         });
+        if (slice) {
+            returned_tracks = track_slice(slice, returned_tracks)
+        }
         return returned_tracks;
     },
-    
+
     "get_meta": function() {
         var table = this;
         var total_tracks = 0;

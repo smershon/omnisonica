@@ -41,7 +41,8 @@ $(function() {
     tt.load_tracks_from_url("j/tracks/" + $("#view").html());
         
     $("#get_track_ids").click(function() {
-        show_track_ids(tt.get_tracks(true));
+        var slice = parse_time($("#track_sample_time").val());
+        show_track_ids(tt.get_tracks(true, slice));
     });
     
     $("button.track_search").click(function() {
