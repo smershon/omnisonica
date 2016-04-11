@@ -29,6 +29,11 @@ def tracks(view=None):
 def search_tracks():
     search_term = request.args.get('term')
     return jsonify({'tracks': [x._to_dict() for x in backend.search_tracks(search_term)]})
+ 
+@app.route('/j/trackdata', methods=['POST'])
+def trackdata():
+    tracks = ['spotify:track:%s' % x for x in request.json]
+    return jsonify({'tracks': [x._to_dict() for x in backend.track_data(tracks)]})
     
 @app.route('/save_view/<view_name>', methods=['POST'])
 def save_view(view_name):

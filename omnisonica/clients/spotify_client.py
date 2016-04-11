@@ -64,7 +64,16 @@ class Client(object):
         resp = requests.get('https://api.spotify.com/v1/albums?ids=%s' % ','.join(album_ids))
         doc = resp.json()
         return [album_from_json(x) for x in doc['albums']]
-        
+    
+    def track_data(self, track_uris):
+        tracks = list(self.get_tracks(track_uris))
+        albums = self.get_albums(set([x.album.uid for x in tracks]))
+        album_lookup = dict([(x.uid, x) for x in albums])
+        for track in tracks:
+            if track.album.uid in album_lookup:
+                track.album = album_lookup[track.album.uid]
+        return tracks
+      
     def search_tracks(self, query):
         resp = requests.get('https://api.spotify.com/v1/search?type=track&q=%s' % query)
         doc = resp.json()

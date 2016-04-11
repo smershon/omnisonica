@@ -97,7 +97,7 @@ TrackTable.prototype = {
           <td class="release_date"><%= track.c.r %></td>
           <td>
             <button class="remove">X</button>
-            <button class="search">more</button>
+            <button class="search">...</button>
           </td>
         </tr>
     `),
@@ -260,6 +260,7 @@ TrackTable.prototype = {
             "duration": format_time(track.d)
         }));
         this.reset_row_listeners();
+        this.redisplay_meta();
     },
     
     "remove_track": function(uid) {
@@ -292,6 +293,28 @@ TrackTable.prototype = {
             "duration": format_time(track.d)
         }));
         this.reset_row_listeners();
+    },
+    
+    "injest_tracks": function(tracklist) {
+        var table = this;
+        var seen_tracks = new Set();
+        tracklist = tracklist.filter(function(uid) {
+            if (seen_tracks.has(uid) || table.track_data[uid]) { return false; }
+            seen_tracks.add(uid);
+            return true;
+        });
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "j/trackdata",
+            data: JSON.stringify(tracklist),
+            success: function(data) {
+                _(data.tracks).each(function(track) {
+                    table.add_track(track);
+                });
+            },
+            dataType: "json"          
+        });
     },
     
     inline_search_results: function(row) {
@@ -390,9 +413,15 @@ SearchTable.prototype = {
           <td class="album"><%= track.c.t %></td>
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
-          <td class="actions"><button class="<%= action %>"><%= action %></button></td>
+          <td class="actions"><button class="<%= action.clazz %>"><%= action.txt %></button></td>
         </tr>
     `),
+    
+    "template_values": {
+        "add": { "clazz": "add", "txt": "+" },
+        "remove": { "clazz": "remove", "txt": "X" },
+        "replace": { "clazz": "replace", "txt": "=" }
+    },
   
     "insert_html": function() {
         this.div.html(`
@@ -441,7 +470,8 @@ SearchTable.prototype = {
             table.track_data[uid] = t;
             results_html += table.row_template({
                 "track": t,
-                "action": table.manager.target_table.track_data[uid] ? "remove" : "add",
+                "action": table.manager.target_table.track_data[uid] ? 
+                    table.template_values.remove : table.template_values.add,
                 "duration": format_time(t.d),
                 "uid": uid
             });
@@ -487,14 +517,14 @@ SearchTable.prototype = {
     
     "mark_track_added": function(uid) {
         this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
-            <button class="remove">remove</button>
+            <button class="remove">X</button>
         `);
         this.reset_row_listeners();
     },
     
     "mark_track_removed": function(uid) {
         this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
-            <button class="add">add</button>
+            <button class="add">+</button>
         `);
         this.reset_row_listeners();       
     },
@@ -539,24 +569,24 @@ InlineSearchTable.prototype = {
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
           <td class="actions">
-            <button class="<%= action %>"><%= action %></button>
-            <button class="replace">replace</button>
+            <button class="<%= action.clazz %>"><%= action.txt %></button>
+            <button class="replace">=</button>
           </td>
         </tr>
     `),
     
     "mark_track_added": function(uid) {
         this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
-            <button class="remove">remove</button>
-            <button class="replace">replace</button>
+            <button class="remove">X</button>
+            <button class="replace">=</button>
         `);
         this.reset_row_listeners();
     },
     
     "mark_track_removed": function(uid) {
         this.div.find("tr[uid='" + uid + "']").find(".actions").html(`
-            <button class="add">add</button>
-            <button class="replace">replace</button>
+            <button class="add">+</button>
+            <button class="replace">=</button>
         `);
         this.reset_row_listeners();       
     },
@@ -575,7 +605,8 @@ InlineSearchTable.prototype = {
     "search_from_url": SearchTable.prototype.search_from_url,
     "inject_search_results": SearchTable.prototype.inject_search_results,
     "add_track": SearchTable.prototype.add_track,
-    "remove_track": SearchTable.prototype.remove_track
+    "remove_track": SearchTable.prototype.remove_track,
+    "template_values": SearchTable.prototype.template_values
     
 };
 

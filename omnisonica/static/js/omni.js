@@ -55,6 +55,13 @@ $(function() {
         if (e.which == 13) {
             main_search(manager);
         }
-    }); 
+    });
+    
+    $(".injest_playlist").click(function() {
+        var pl = $("#playlist_input").val().split(" ").map(function(uri) {
+            return uri.split("/").pop().split(":").pop();
+        });
+        tt.injest_tracks(pl);
+    });
 
 });

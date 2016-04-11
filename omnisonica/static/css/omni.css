@@ -11,8 +11,7 @@ h3 {
 
 button {
     background-color: #007f00;
-    border: 2px;
-    border-color: #efffef;
+    border: 2px solid #efffef;
     border-radius: 4px;
     color: #efffef;
     padding: 2px 5px;
@@ -22,6 +21,10 @@ button {
     font-size: 10px;   
 }
 
+button:hover {
+    background-color: #009f00;
+}
+
 button.sort_button {
     font-size: 14px;
 }
@@ -29,6 +32,10 @@ button.sort_button {
 button.remove {
     background-color: #7f0000;
     color: #ffefef;
+}
+
+button.remove:hover {
+    background-color: #9f0000;
 }
 
 table {
@@ -72,6 +79,7 @@ td.artist {
 }
 
 td.album {
+    font-style: italic;
     width: 25%;
 }
 
