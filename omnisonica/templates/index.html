@@ -1,7 +1,11 @@
 <html>
 <head>
+  <script src="static/js/external/jquery-2.2.1.min.js"></script>
+  <script src="static/js/index.js"></script>
 </head>
 <body>
+  <input type="text" id="new_view"></input>
+  <button class="create_new">new</button>
   {% for view in views %}
   <p><a href="{{ view }}">{{ view }}</a></p>
   {% endfor %}
