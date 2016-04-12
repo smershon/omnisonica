@@ -74,6 +74,25 @@ function closest_track_by_duration(tracks, duration) {
     return best_track;
 }
 
+function token_matches(search, tokens) {
+    var matches = 0;
+    _(tokens).each(function(token) {
+        if (token.indexOf(search) > -1) { matches++; }
+    });
+    return matches;
+}
+
+function all_matches(search_tokens, str) {
+    var match_tokens = str.toLowerCase().split(" ");
+    var matched = true;
+    _(search_tokens).each(function(token) {
+        if (token_matches(token, match_tokens) < 1) {
+            matched = false;
+        }
+    });
+    return matched;   
+}
+
 var TrackTable = function(div, meta_div) {
     this.table_type = "TrackTable";
     this.div = div;
@@ -160,6 +179,11 @@ TrackTable.prototype = {
     
     "compile_filter": function() {
         return {
+            "title_filter": this.div.find("#title_filter").val().toLowerCase().split(" "),
+            "artist_filter": this.div.find("#artist_filter").val().toLowerCase().split(" "),
+            "album_filter": this.div.find("#album_filter").val().toLowerCase().split(" "),
+            "max_duration": parse_time(this.div.find("#max_duration").val()),
+            "min_duration": parse_time(this.div.find("#min_duration").val()),
             "max_date": this.div.find("#max_date").val(),
             "min_date": this.div.find("#min_date").val()
         }
@@ -167,6 +191,21 @@ TrackTable.prototype = {
     
     "show_track": function(uid, params) {
         var track = this.track_data[uid];
+        if (params.title_filter && !all_matches(params.title_filter, track.t)) {
+            return false;
+        }
+        if (params.artist_filter && !all_matches(params.artist_filter, track.a.n)) {
+            return false;
+        }
+        if (params.album_filter && !all_matches(params.album_filter, track.c.t)) {
+            return false;
+        }
+        if (params.min_duration && track.d < params.min_duration) {
+            return false;
+        }
+        if (params.max_duration && track.d > params.max_duration) {
+            return false;
+        }
         if (params.min_date && track.c.r < params.min_date) {
             return false;
         }
