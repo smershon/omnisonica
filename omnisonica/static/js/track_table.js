@@ -113,10 +113,23 @@ TrackTable.prototype = {
               <thead>
                 <tr class="header">
                   <th class="column_uid">uid</th>
-                  <th class="column_track"><button class="sort_button">Title</button></th>
-                  <th class="column_artist"><button class="sort_button">Artist</button></th>
-                  <th class="column_album"><button class="sort_button">Album</button></th>
-                  <th class="column_duration"><button class="sort_button">Duration</button></th>
+                  <th class="column_track">
+                    <button class="sort_button">Title</button>
+                    <input type="text" id="title_filter"></input>
+                  </th>
+                  <th class="column_artist">
+                    <button class="sort_button">Artist</button>
+                    <input type="text" id="artist_filter"></input>
+                  </th>
+                  <th class="column_album">
+                    <button class="sort_button">Album</button>
+                    <input type="text" id="album_filter"></input>
+                  </th>
+                  <th class="column_duration">
+                    <button class="sort_button">Duration</button>
+                    <div>Min: <input type="text" class="duration" id="min_duration"></input></div>
+                    <div>Max: <input type="text" class="duration" id="max_duration"></input></div>    
+                  </th>
                   <th class="column_release">
                     <button class="sort_button">Release Date</button><br/>
                     <div>Min: <input type="text" class="date" id="min_date"></input></div>
