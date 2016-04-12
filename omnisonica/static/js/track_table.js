@@ -36,7 +36,7 @@ function search_term_for_track(track) {
         if (token.startsWith("(") && i > 0) { break; }
         track_term += " " + token;
     }
-    return artist_term + track_term;
+    return {"artist": artist_term, "track": track_term};
 }
 
 function track_slice(slice, tracks) {
@@ -273,6 +273,7 @@ TrackTable.prototype = {
             delete(this.track_data[uid]);
         }
         this.div.find("tr[uid='" + uid + "']").first().remove();
+        this.redisplay_meta();
     },
     
     "replace_track": function(uid, track) {
@@ -309,8 +310,18 @@ TrackTable.prototype = {
             url: "j/trackdata",
             data: JSON.stringify(tracklist),
             success: function(data) {
+                var seen_artist_tracks = new Set();
+                _(table.tracks).each(function(uid) {
+                    var keys = search_term_for_track(table.track_data[uid]);
+                    seen_artist_tracks.add(keys.artist + "###sep###" + keys.track);
+                });
                 _(data.tracks).each(function(track) {
-                    table.add_track(track);
+                    var keys = search_term_for_track(track);
+                    var key = keys.artist + "###sep###" + keys.track;
+                    if (!seen_artist_tracks.has(key)) {
+                        table.add_track(track);
+                        seen_artist_tracks.add(key);
+                    }
                 });
             },
             dataType: "json"          
@@ -327,7 +338,9 @@ TrackTable.prototype = {
         var st = new InlineSearchTable(div.find("td"), this.search_manager, uid, {
             "on_hide": function() { div.remove(); }
         });
-        st.search_from_url("j/search/tracks", { "term": search_term });      
+        st.search_from_url("j/search/tracks", 
+            { "term": search_term.artist + " " + search_term.track }
+        );      
     },
     
     "get_tracks": function(visible, slice) {
