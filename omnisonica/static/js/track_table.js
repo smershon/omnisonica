@@ -57,7 +57,6 @@ function track_slice(slice, tracks) {
             total_time += next_track.d;
         }
     }
-    console.log(format_time(total_time));
     return returned_tracks;
 }
 
@@ -91,6 +90,30 @@ function all_matches(search_tokens, str) {
         }
     });
     return matched;   
+}
+
+// Credit: https://github.com/coolaj86/knuth-shuffle
+function shuffle(array) {
+    var currentIndex = array.length, temporaryValue, randomIndex;
+
+    // While there remain elements to shuffle...
+    while (0 !== currentIndex) {
+
+        // Pick a remaining element...
+        randomIndex = Math.floor(Math.random() * currentIndex);
+        currentIndex -= 1;
+
+        // And swap it with the current element.
+        temporaryValue = array[currentIndex];
+        array[currentIndex] = array[randomIndex];
+        array[randomIndex] = temporaryValue;
+    }
+
+    return array;
+}
+
+function smart_shuffle(tracks) {
+    return shuffle(tracks);
 }
 
 var TrackTable = function(div, meta_div) {
@@ -395,15 +418,21 @@ TrackTable.prototype = {
         );      
     },
     
-    "get_tracks": function(visible, slice) {
+    "get_tracks": function(visible, slice, ordering) {
         var table = this;
         var returned_tracks = [];
         _(table.tracks).each(function(uid) {
             var t = table.track_data[uid];
             if (!visible || t.v) { returned_tracks.push(t); }
         });
-        if (slice) {
-            returned_tracks = track_slice(slice, returned_tracks)
+        if (ordering === "random") {
+            if (slice) {
+                returned_tracks = track_slice(slice, returned_tracks);
+            } else {
+                returned_tracks = shuffle(returned_tracks);
+            }
+        } else if (ordering === "smart") {
+            returned_tracks = smart_shuffle(returned_tracks);
         }
         return returned_tracks;
     },

@@ -44,7 +44,9 @@ $(function() {
         
     $("#get_track_ids").click(function() {
         var slice = parse_time($("#track_sample_time").val());
-        show_track_ids(tt.get_tracks(true, slice));
+        var ordering = $("#track_ordering").val();
+        console.log(ordering);
+        show_track_ids(tt.get_tracks(true, slice, ordering));
     });
     
     $("button.track_search").click(function() {
