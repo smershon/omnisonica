@@ -21,6 +21,7 @@ def track_from_json(doc):
     return Track(doc['uri'],
             title=doc['name'],
             duration=doc['duration_ms'],
+            popularity=doc['popularity'],
             artist=artist,
             album=album)
             

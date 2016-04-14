@@ -1,12 +1,14 @@
 class Track(object):
     def __init__(self, uid,
             title=None,
-            duration=None, 
+            duration=None,
+            popularity=None,
             artist=None, 
             album=None):
         self.uid = uid
         self.title = title
         self.duration=duration
+        self.popularity=popularity
         self.artist = artist
         self.album = album
         
@@ -15,6 +17,7 @@ class Track(object):
             'u': self.uid,
             't': self.title,
             'd': self.duration,
+            'p': self.popularity,
             'a': self.artist._to_dict() if self.artist else None,
             'c': self.album._to_dict() if self.album else None
         }

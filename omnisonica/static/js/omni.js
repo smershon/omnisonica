@@ -45,7 +45,6 @@ $(function() {
     $("#get_track_ids").click(function() {
         var slice = parse_time($("#track_sample_time").val());
         var ordering = $("#track_ordering").val();
-        console.log(ordering);
         show_track_ids(tt.get_tracks(true, slice, ordering));
     });
     
@@ -59,11 +58,25 @@ $(function() {
         }
     });
     
-    $(".injest_playlist").click(function() {
+    $("button.injest_playlist").click(function() {
         var pl = $("#playlist_input").val().split(" ").map(function(uri) {
             return uri.split("/").pop().split(":").pop();
         });
         tt.injest_tracks(pl);
+    });
+    
+    $("button.filter_columns").click(function() {
+        $("#column_selection input").each(function(i,e) {
+            var header_column = $(".data_main th.column_" + $(e).val());
+            var body_column = $(".data_main td." + $(e).val());
+            if ($(e).is(":checked")) {
+                header_column.show();
+                body_column.show();
+            } else {
+                header_column.hide();
+                body_column.hide();
+            }
+        });
     });
 
 });

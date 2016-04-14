@@ -172,7 +172,7 @@ TrackTable.prototype = {
                     <div>Min: <input type="text" class="duration" id="min_duration"></input></div>
                     <div>Max: <input type="text" class="duration" id="max_duration"></input></div>    
                   </th>
-                  <th class="column_release">
+                  <th class="column_release_date">
                     <button class="sort_button">Release Date</button><br/>
                     <div>Min: <input type="text" class="date" id="min_date"></input></div>
                     <div>Max: <input type="text" class="date" id="max_date"></input></div>
@@ -192,7 +192,7 @@ TrackTable.prototype = {
         table.make_sortable(".column_artist", function(t) { return t.a.n; });
         table.make_sortable(".column_album", function(t) { return t.c.t; });
         table.make_sortable(".column_duration", function(t) { return t.d; });
-        table.make_sortable(".column_release", function(t) { return t.c.r; });
+        table.make_sortable(".column_release_date", function(t) { return t.c.r; });
         table.div.find("th input").keypress(function(e) {
             if (e.which == 13) {
                 table.filter_display();
@@ -527,7 +527,7 @@ SearchTable.prototype = {
                   <th class="column_artist"><button class="sort_button">artist</button></th>
                   <th class="column_album"><button class="sort_button">album</button></th>
                   <th class="column_duration"><button class="sort_button">duration</button></th>
-                  <th class="column_release"><button class="sort_button">release date</button><br/></th>
+                  <th class="column_release_date"><button class="sort_button">release date</button><br/></th>
                   <th class="column_action">action</th>
                 </tr>
               </thead>
