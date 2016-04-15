@@ -4,7 +4,8 @@ class Track(object):
             duration=None,
             popularity=None,
             artist=None, 
-            album=None):
+            album=None,
+            meta=None):
         self.uid = uid
         self.title = title
         self.duration=duration
@@ -19,7 +20,8 @@ class Track(object):
             'd': self.duration,
             'p': self.popularity,
             'a': self.artist._to_dict() if self.artist else None,
-            'c': self.album._to_dict() if self.album else None
+            'c': self.album._to_dict() if self.album else None,
+            'm': self.meta._to_dict() if self.meta else None
         }
         
     def __repr__(self):

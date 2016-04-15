@@ -31,20 +31,6 @@ $(function() {
         var st = new SearchTable($("#search_results .search_inner"), manager);
         st.search_from_url("j/search/tracks", { "term": search_term });      
     }
-    
-    function filter_columns() {
-        $("#column_selection input").each(function(i,e) {
-            var header_column = $(".data_main th.column_" + $(e).val());
-            var body_column = $(".data_main td." + $(e).val());
-            if ($(e).is(":checked")) {
-                header_column.show();
-                body_column.show();
-            } else {
-                header_column.hide();
-                body_column.hide();
-            }
-        });   
-    }
 
     $("button.save_view").click(function() {
         save_view($("#view").html());
@@ -79,11 +65,9 @@ $(function() {
     });
     
     $("button.filter_columns").click(function() {
-        filter_columns();
+        tt.filter_columns();
     });
     
-    tt.load_tracks_from_url("j/tracks/" + $("#view").html(), function() {
-        filter_columns();
-    });
+    tt.load_tracks_from_url("j/tracks/" + $("#view").html());
 
 });

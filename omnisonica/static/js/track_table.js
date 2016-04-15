@@ -92,6 +92,19 @@ function all_matches(search_tokens, str) {
     return matched;   
 }
 
+function random_sample(src, max) {
+    if (src.length <= max) {
+        return src.splice(0, src.length);
+    }
+    var sample = [];
+    var idx;
+    while (sample.length < max) {
+        idx = Math.floor(Math.random() * src.length);
+        sample = sample.concat(src.splice(idx, 1));
+    }
+    return sample;
+}
+
 // Credit: https://github.com/coolaj86/knuth-shuffle
 function shuffle(array) {
     var currentIndex = array.length, temporaryValue, randomIndex;
@@ -113,7 +126,50 @@ function shuffle(array) {
 }
 
 function smart_shuffle(tracks) {
-    return shuffle(tracks);
+    var pl = [];
+    var sample;
+    var history;
+    var best_score;
+    var best_track;
+    var cur_score;
+    while (tracks.length > 0) {
+        sample = random_sample(tracks, 10);
+        history = pl.slice(-10);
+        history.reverse();
+        best_track = null;
+        best_score = 0.0;
+        _(sample).each(function(t) {
+            cur_score = smart_shuffle_score(t, history);
+            if (cur_score > best_score) {
+                best_track = t;
+                best_score = cur_score;
+            }
+        });
+        pl.push(best_track);
+        sample.splice(sample.indexOf(best_track), 1);
+        tracks = tracks.concat(sample);
+    }
+    return pl;
+}
+
+function smart_shuffle_score(track, hist) {
+    if (hist.length <= 0) { return track.p; }
+    var score = 0.0;
+    _(hist).each(function(h,i) {
+        score += track_diff_score(track, h)/(i + 1.0);
+    });
+    return score;
+}
+
+function track_diff_score(t0, t1) {
+    var score = 0.0;
+    if (t0.a.u !== t1.a.u) { score += 1.0; }
+    if (t0.c.u !== t1.c.u) { score += 0.5; }
+    score += Math.abs(t0.p - t1.p)/200.0;
+    var ddur = Math.abs(t0.d - t1.d)/1000.0;
+    if (ddur > 180) { ddur = 180; }
+    score += ddur/720.0;
+    return score;
 }
 
 var TrackTable = function(div, meta_div) {
@@ -259,6 +315,21 @@ TrackTable.prototype = {
         table.redisplay_meta();
     },
     
+    "filter_columns": function() {
+        var table = this;
+        $("#column_selection input").each(function(i,e) {
+            var header_column = table.div.find("th.column_" + $(e).val());
+            var body_column = table.div.find("td." + $(e).val());
+            if ($(e).is(":checked")) {
+                header_column.show();
+                body_column.show();
+            } else {
+                header_column.hide();
+                body_column.hide();
+            }
+        });   
+    },
+    
     "make_sortable": function(column, sort_fn) {
         var table = this;
         table.div.find(".header " + column + " .sort_button").click(function() {
@@ -317,6 +388,7 @@ TrackTable.prototype = {
             });
         });
         table.div.find(".data").html(track_html);
+        table.filter_columns();
         table.redisplay_meta();
     },
     
@@ -345,6 +417,7 @@ TrackTable.prototype = {
             "duration": format_time(track.d)
         }));
         this.reset_row_listeners();
+        this.filter_columns();
         this.redisplay_meta();
     },
     
@@ -379,6 +452,7 @@ TrackTable.prototype = {
             "duration": format_time(track.d)
         }));
         this.reset_row_listeners();
+        this.filter_columns();
     },
     
     "injest_tracks": function(tracklist) {
