@@ -57,3 +57,16 @@ class Album(object):
             'r': self.release_date,
             'i': self.image_url
         }
+        
+class Meta(object):
+    def __init__(self,
+            date_added=None,
+            last_modified=None):
+        self.date_added = date_added
+        self.last_modified = last_modified
+        
+    def to_dict(self):
+        return {
+            'a': self.date_added,
+            'm': self.last_modified
+        }

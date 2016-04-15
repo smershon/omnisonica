@@ -137,6 +137,7 @@ TrackTable.prototype = {
           <td class="album"><%= track.c.t %></td>
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
+          <td class="popularity"><%= track.p %></td>
           <td>
             <button class="remove">X</button>
             <button class="search">...</button>
@@ -177,6 +178,9 @@ TrackTable.prototype = {
                     <div>Min: <input type="text" class="date" id="min_date"></input></div>
                     <div>Max: <input type="text" class="date" id="max_date"></input></div>
                   </th>
+                  <th class="column_popularity">
+                    <button class="sort_button">Popularity</button>
+                  </th>
                   <th class="column_action">Action</th>
                 </tr>
               </thead>
@@ -188,11 +192,12 @@ TrackTable.prototype = {
     
     "attach_header_listeners": function() {
         var table = this;
-        table.make_sortable(".column_track", function(t) { return t.t; });
-        table.make_sortable(".column_artist", function(t) { return t.a.n; });
-        table.make_sortable(".column_album", function(t) { return t.c.t; });
+        table.make_sortable(".column_track", function(t) { return t.t.toLowerCase(); });
+        table.make_sortable(".column_artist", function(t) { return t.a.n.toLowerCase(); });
+        table.make_sortable(".column_album", function(t) { return t.c.t.toLowerCase(); });
         table.make_sortable(".column_duration", function(t) { return t.d; });
         table.make_sortable(".column_release_date", function(t) { return t.c.r; });
+        table.make_sortable(".column_popularity", function(t) { return -t.p; });
         table.div.find("th input").keypress(function(e) {
             if (e.which == 13) {
                 table.filter_display();
@@ -258,6 +263,7 @@ TrackTable.prototype = {
         var table = this;
         table.div.find(".header " + column + " .sort_button").click(function() {
             var sorting = $(this).attr("sorting");
+            $(table.div).find(".sort_button").removeAttr("sorting");
             if (!sorting) {
                 $(this).attr("sorting", "asc");
                 table.tracks = _.sortBy(table.tracks, function(uri) {
@@ -277,7 +283,7 @@ TrackTable.prototype = {
         });        
     },
     
-    "load_tracks_from_url": function(url) {
+    "load_tracks_from_url": function(url, callback) {
         var table = this;
         $.get(url, function(data) {
             var idx = table.next_idx();
@@ -285,12 +291,16 @@ TrackTable.prototype = {
                 t.idx = idx++;
                 t.v = true;
                 t.d = parseInt(t.d);
+                t.p = parseInt(t.p);
                 var uid = t.u.split(":").pop();
                 table.tracks.push(uid);
                 table.track_data[uid] = t;
             });
             table.reset_display();
             table.reset_row_listeners();
+            if (callback) {
+                callback();
+            }
         });        
     },
     

@@ -81,6 +81,7 @@ def get_tracks_from_file(view=None):
                     uid=doc.get('u'),
                     title=doc.get('t'),
                     duration=doc.get('d'),
+                    popularity=doc.get('p'),
                     artist=Artist(
                         doc.get('a', {}).get('u'),
                         doc.get('a', {}).get('n'),
