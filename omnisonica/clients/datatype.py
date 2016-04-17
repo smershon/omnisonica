@@ -12,6 +12,7 @@ class Track(object):
         self.popularity=popularity
         self.artist = artist
         self.album = album
+        self.meta = meta
         
     def _to_dict(self):
         return {

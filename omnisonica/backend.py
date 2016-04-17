@@ -1,4 +1,4 @@
-from clients.datatype import Album, Artist, Track
+from clients.datatype import Album, Artist, Track, Meta
 from clients import spotify_client
 import random
 import os
@@ -90,6 +90,11 @@ def get_tracks_from_file(view=None):
                         uid=doc.get('c', {}).get('u'),
                         title=doc.get('c', {}).get('t'),
                         release_date=doc.get('c', {}).get('r')
+                    ),
+                    meta=Meta(
+                        date_added=doc.get('m', {}).get('a'),
+                        last_modified=doc.get('m', {}).get('m'),
+                        tags=doc.get('m', {}).get('x')
                     )
                 )
                 tracks.append(track)

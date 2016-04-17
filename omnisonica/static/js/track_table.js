@@ -194,6 +194,8 @@ TrackTable.prototype = {
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
           <td class="popularity"><%= track.p %></td>
+          <td class="added"><%= track.m.a %></td>
+          <td class="modified"><%= track.m.m %></td>
           <td>
             <button class="remove">X</button>
             <button class="search">...</button>
@@ -236,6 +238,12 @@ TrackTable.prototype = {
                   </th>
                   <th class="column_popularity">
                     <button class="sort_button">Popularity</button>
+                  </th>
+                  <th class="column_added">
+                    <button class="sort_button">Added</button>
+                  </th>
+                  <th class="column_modified">
+                    <button class="sort_button">Modified</button>
                   </th>
                   <th class="column_action">Action</th>
                 </tr>
