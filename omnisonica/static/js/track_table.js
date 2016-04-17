@@ -15,6 +15,17 @@ function format_time(milliseconds) {
     }
 }
 
+function format_date_and_time(d) {
+    var yr = d.getFullYear();
+    var mos = d.getMonth() + 1;
+    var day = d.getDate();
+    var hr = d.getHours();
+    var min = d.getMinutes();
+    var sec = d.getSeconds();
+    return yr + "-" + pad(2, mos) + "-" + pad(2, day) + " " +
+           hr + ":" + pad(2, min) + ":" + pad(2, sec);
+}
+
 function parse_time(timestr) {
     if (!timestr) { return undefined; }
     var milliseconds = 0;
@@ -194,8 +205,8 @@ TrackTable.prototype = {
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
           <td class="popularity"><%= track.p %></td>
-          <td class="added"><%= track.m.a %></td>
-          <td class="modified"><%= track.m.m %></td>
+          <td class="added"><%= added %></td>
+          <td class="modified"><%= modified %></td>
           <td>
             <button class="remove">X</button>
             <button class="search">...</button>
@@ -262,6 +273,8 @@ TrackTable.prototype = {
         table.make_sortable(".column_duration", function(t) { return t.d; });
         table.make_sortable(".column_release_date", function(t) { return t.c.r; });
         table.make_sortable(".column_popularity", function(t) { return -t.p; });
+        table.make_sortable(".column_added", function(t) { return t.m.a; });
+        table.make_sortable(".column_modified", function(t) { return t.m.m; });
         table.div.find("th input").keypress(function(e) {
             if (e.which == 13) {
                 table.filter_display();
@@ -371,6 +384,8 @@ TrackTable.prototype = {
                 t.v = true;
                 t.d = parseInt(t.d);
                 t.p = parseInt(t.p);
+                t.m.a = new Date(1000*parseInt(t.m.a));
+                t.m.m = new Date(1000*parseInt(t.m.m));
                 var uid = t.u.split(":").pop();
                 table.tracks.push(uid);
                 table.track_data[uid] = t;
@@ -392,7 +407,9 @@ TrackTable.prototype = {
                 "track": track,
                 "uid": uid,
                 "visibility": track.v ? "table-row" : "none",
-                "duration": format_time(track.d)
+                "duration": format_time(track.d),
+                "added": format_date_and_time(track.m.a),
+                "modified": format_date_and_time(track.m.m)
             });
         });
         table.div.find(".data").html(track_html);
@@ -414,6 +431,7 @@ TrackTable.prototype = {
     
     "add_track": function(track) {
         track.idx = this.next_idx();
+        track.m = {"a": new Date(), "m": new Date()};
         var uid = track.u.split(":").pop();
         this.tracks.push(uid);
         this.track_data[uid] = track;
@@ -422,7 +440,9 @@ TrackTable.prototype = {
             "track": track,
             "uid": uid,
             "visibility": track.v ? "table-row" : "none",
-            "duration": format_time(track.d)
+            "duration": format_time(track.d),
+            "added": format_date_and_time(track.m.a),
+            "modified": format_date_and_time(track.m.m)
         }));
         this.reset_row_listeners();
         this.filter_columns();
@@ -444,7 +464,9 @@ TrackTable.prototype = {
     
     "replace_track": function(uid, track) {
         var new_uid = track.u.split(":").pop();
-        track.idx = this.track_data[uid].idx;
+        var old_track = this.track_data[uid];
+        track.idx = old_track.idx;
+        track.m = {"a": old_track.m.a, "m": new Date()};
         delete(this.track_data[uid])
         var idx = this.tracks.indexOf(uid);
         if (idx >= -1) { 
@@ -457,7 +479,9 @@ TrackTable.prototype = {
             "track": track,
             "uid": new_uid,
             "visibility": track.v ? "table-row" : "none",
-            "duration": format_time(track.d)
+            "duration": format_time(track.d),
+            "added": format_date_and_time(track.m.a),
+            "modified": format_date_and_time(track.m.m)
         }));
         this.reset_row_listeners();
         this.filter_columns();

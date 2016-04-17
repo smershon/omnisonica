@@ -12,11 +12,16 @@ $(function() {
     }
     
     function save_view(view_name) {
+        var tracks = tt.get_tracks();
+        _(tracks).each(function(t) {
+            t.m.a = t.m.a.getTime()/1000;
+            t.m.m = t.m.m.getTime()/1000;
+        });
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",
             url: "/save_view/" + view_name,
-            data: JSON.stringify(tt.get_tracks()),
+            data: JSON.stringify(tracks),
             success: function(data) {
                 console.log(data);
             },
