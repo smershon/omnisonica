@@ -63,12 +63,15 @@ class Album(object):
 class Meta(object):
     def __init__(self,
             date_added=None,
-            last_modified=None):
+            last_modified=None,
+            tags=None):
         self.date_added = date_added
         self.last_modified = last_modified
+        self.tags = tags or []
         
-    def to_dict(self):
+    def _to_dict(self):
         return {
             'a': self.date_added,
-            'm': self.last_modified
+            'm': self.last_modified,
+            'x': self.tags
         }

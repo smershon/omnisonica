@@ -1,6 +1,9 @@
 from optparse import OptionParser
 import simplejson as json
 import spotify_client
+import datatype
+import datetime
+import calendar
 
 def migrate(path_in, path_out):
     client = spotify_client.Client()
@@ -12,6 +15,8 @@ def migrate(path_in, path_out):
     tracks = client.track_data(uris)
     with open(path_out, 'wb') as f:
         for t in tracks:
+            ts = calendar.timegm(datetime.datetime.now().utctimetuple())
+            t.meta = datatype.Meta(date_added=ts, last_modified=ts)
             f.write('%s\n' % json.dumps(t._to_dict()))
 
 def main():
