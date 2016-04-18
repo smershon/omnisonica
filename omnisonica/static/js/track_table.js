@@ -143,6 +143,11 @@ function smart_shuffle(tracks) {
     var best_score;
     var best_track;
     var cur_score;
+    var artist_track_count = {};
+    _(tracks).each(function(t) {
+        artist_track_count[t.a.u] = artist_track_count[t.a.u] ?
+            artist_track_count[t.a.u] + 1 : 1;
+    });
     while (tracks.length > 0) {
         sample = random_sample(tracks, 10);
         history = pl.slice(-10);
@@ -150,26 +155,28 @@ function smart_shuffle(tracks) {
         best_track = null;
         best_score = 0.0;
         _(sample).each(function(t) {
-            cur_score = smart_shuffle_score(t, history);
+            cur_score = smart_shuffle_score(t, history, artist_track_count, 
+                    tracks.length + sample.length);
             if (cur_score > best_score) {
                 best_track = t;
                 best_score = cur_score;
             }
         });
         pl.push(best_track);
+        artist_track_count[best_track.a.u]--;
         sample.splice(sample.indexOf(best_track), 1);
         tracks = tracks.concat(sample);
     }
     return pl;
 }
 
-function smart_shuffle_score(track, hist) {
+function smart_shuffle_score(track, hist, artist_track_count, total) {
     if (hist.length <= 0) { return track.p; }
     var score = 0.0;
     _(hist).each(function(h,i) {
         score += track_diff_score(track, h)/(i + 1.0);
     });
-    return score;
+    return score + artist_track_count[track.a.u]/total;
 }
 
 function track_diff_score(t0, t1) {
