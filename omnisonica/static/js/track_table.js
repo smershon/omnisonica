@@ -396,6 +396,7 @@ TrackTable.prototype = {
                 var uid = t.u.split(":").pop();
                 table.tracks.push(uid);
                 table.track_data[uid] = t;
+                console.log(t);
             });
             table.reset_display();
             table.reset_row_listeners();
