@@ -9,3 +9,13 @@ def batch_as_stream(input_stream, process_func, batch_size=100):
     if buffer:
         for processed_item in process_func(buffer):
             yield processed_item
+            
+def clean_title(title):
+    cleaned_title = []
+    for i,token in enumerate(title.split(' ')):
+        if (token.startswith('-') 
+                or (token.startswith('(') and i >= 1)
+                or (token.startswith('[') and i >= 1)):
+            break
+        cleaned_title.append(token)
+    return ' '.join(cleaned_title)

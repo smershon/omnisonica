@@ -12,11 +12,19 @@ $(function() {
     }
     
     function save_view(view_name) {
-        var tracks = tt.get_tracks();
+        var tracks = tt.get_tracks().map(function(t) {
+            var track = jQuery.extend(true, {}, t);
+            track.m.a = track.m.a.getTime()/1000;
+            track.m.m = track.m.m.getTime()/1000;
+            return track
+        });
+        /*
         _(tracks).each(function(t) {
+            console.log(t);
             t.m.a = t.m.a.getTime()/1000;
             t.m.m = t.m.m.getTime()/1000;
         });
+        */
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",

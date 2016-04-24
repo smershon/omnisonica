@@ -66,25 +66,58 @@ class Client(object):
         doc = resp.json()
         return [album_from_json(x) for x in doc['albums']]
     
-    def track_data(self, track_uris):
-        tracks = list(self.get_tracks(track_uris))
+    def _add_album_info(self, tracks):
         albums = self.get_albums(set([x.album.uid for x in tracks]))
         album_lookup = dict([(x.uid, x) for x in albums])
         for track in tracks:
             if track.album.uid in album_lookup:
-                track.album = album_lookup[track.album.uid]
+                track.album = album_lookup[track.album.uid]     
+    
+    def track_data(self, track_uris):
+        tracks = list(self.get_tracks(track_uris))
+        self._add_album_info(tracks)
         return tracks
       
-    def search_tracks(self, query):
+    def search_tracks(self, query, album_info=True):
         resp = requests.get('https://api.spotify.com/v1/search?type=track&q=%s' % query)
         doc = resp.json()
         tracks = []
         for track in doc['tracks']['items']:
             tracks.append(track_from_json(track))
-        albums = self.get_albums(set([x.album.uid for x in tracks]))
-        album_lookup = dict([(x.uid, x) for x in albums])
-        for track in tracks:
-            if track.album.uid in album_lookup:
-                track.album = album_lookup[track.album.uid]
-        return tracks  
+        if album_info:
+            self._add_album_info(tracks)
+        return tracks
+        
+    def top_tracks(self, artist_uid, count=10):
+        uid = artist_uid.split(':')[-1].split('/')[-1]
+        resp = requests.get('https://api.spotify.com/v1/artists/%s' % uid)
+        doc = resp.json()
+        artist_name = doc['name']
+        limit = min(count, 50)
+        offset = 0
+        tracks = []
+        seen = set()
+        while len(tracks) < count:
+            prev_len = len(tracks)
+            resp = requests.get('https://api.spotify.com/v1/search?type=track&limit=%d&offset=%d&q=artist:%s' % 
+                (limit, offset, artist_name))
+            doc = resp.json()
+            for track in doc['tracks']['items']:
+                title = util.clean_title(track['name']).lower()
+                if track['artists'][0]['uri'].split(':')[-1] == uid and title not in seen:
+                    tracks.append(track_from_json(track))
+                    seen.add(title)
+                if len(tracks) >= count:
+                    break
+            offset += limit
+            if len(tracks) == prev_len:
+                break
+        return tracks
+         
+        
+        
+        
+        
+        
+        
         
