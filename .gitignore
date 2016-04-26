@@ -1,6 +1,10 @@
 # Other stuff
 sample.json
 omnisonica/data/
+omnisonica/clients/*.json
+omnisonica/clients/*.txt
+omnisonica/clients/*.csv
+omnisonica/clients/thousands/
 
 # External javascript libraries
 omnisonica/static/js/external/

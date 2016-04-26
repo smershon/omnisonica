@@ -1,3 +1,27 @@
+import requests
+
+import ssl
+from functools import wraps
+
+def sslwrap(func):
+    @wraps(func)
+    def bar(*args, **kw):
+        kw['ssl_version'] = ssl.PROTOCOL_TLSv1
+        return func(*args, **kw)
+    return bar
+
+ssl.wrap_socket = sslwrap(ssl.wrap_socket)
+
+def retry(uri, retries=5):
+    while retries:
+        try:
+            resp = requests.get(uri)
+        except:
+            retries -= 1
+        else:
+            return resp
+    raise Exception('Uh, not working dude')
+
 def batch_as_stream(input_stream, process_func, batch_size=100):
     buffer = []
     for item in input_stream:

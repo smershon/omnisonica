@@ -2,6 +2,8 @@ import simplejson as json
 
 import requests
 
+import urllib
+
 from datatype import Album
 from datatype import Artist
 from datatype import Track
@@ -90,19 +92,36 @@ class Client(object):
         
     def top_tracks(self, artist_uid, count=10):
         uid = artist_uid.split(':')[-1].split('/')[-1]
-        resp = requests.get('https://api.spotify.com/v1/artists/%s' % uid)
+        uri = 'https://api.spotify.com/v1/artists/%s' % uid
+        print uri
+        resp = util.retry(uri)
         doc = resp.json()
         artist_name = doc['name']
         limit = min(count, 50)
+        misses = 0
         offset = 0
         tracks = []
         seen = set()
-        while len(tracks) < count:
+        print artist_name.encode('utf-8')
+        while len(tracks) < count and misses < 5:
             prev_len = len(tracks)
-            resp = requests.get('https://api.spotify.com/v1/search?type=track&limit=%d&offset=%d&q=artist:%s' % 
-                (limit, offset, artist_name))
-            doc = resp.json()
-            for track in doc['tracks']['items']:
+            uri = 'https://api.spotify.com/v1/search?%s' % urllib.urlencode(
+                {
+                    'type': 'track',
+                    'limit': limit,
+                    'offset': offset,
+                    'q': 'artist:%s' % artist_name.encode('utf-8')
+                }
+            )
+            print uri
+            resp = util.retry(uri)
+            
+            try:
+                doc = resp.json()
+            except:
+                doc = {'tracks': {'items': []}}
+            
+            for track in doc.get('tracks', {}).get('items',[]):
                 title = util.clean_title(track['name']).lower()
                 if track['artists'][0]['uri'].split(':')[-1] == uid and title not in seen:
                     tracks.append(track_from_json(track))
@@ -111,7 +130,7 @@ class Client(object):
                     break
             offset += limit
             if len(tracks) == prev_len:
-                break
+                misses += 1
         return tracks
          
         
