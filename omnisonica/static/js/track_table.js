@@ -205,7 +205,7 @@ TrackTable.prototype = {
     
     "row_template": _.template(`
         <tr class="trackrow" uid="<%= uid %>" style="display:<%= visibility %>;">
-          <td class="uid"><%= track.u %></td>
+          <td class="uid">spotify:track:<%= track.u %></td>
           <td class="title"><%= track.t %></td>
           <td class="artist"><%= track.a.n %></td>
           <td class="album"><%= track.c.t %></td>
