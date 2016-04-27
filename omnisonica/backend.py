@@ -14,6 +14,7 @@ def get_tracks_from_file(view=None):
         with open('data/%s.json' % view, 'rb') as f:
             for line in f:
                 doc = json.loads(line.strip())
+                doc['m'] = doc['m'] or {}
                 track = Track(
                     uid=doc.get('u'),
                     title=doc.get('t'),
@@ -35,8 +36,10 @@ def get_tracks_from_file(view=None):
                         tags=doc.get('m', {}).get('x')
                     )
                 )
+                log.info(track.title)
                 tracks.append(track)
-    except:
+    except Exception as e:
+        log.warn('THERE WAS PROBLEM: %r', e)
         pass
     return tracks
     
@@ -58,3 +61,4 @@ def save_view(view_name, tracks, user_id='default'):
     omni_redis.put_view(user_id, view_name, tracks)
    
 get_tracks = get_tracks_from_redis
+#get_tracks = get_tracks_from_file

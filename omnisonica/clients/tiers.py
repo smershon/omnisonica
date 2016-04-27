@@ -54,83 +54,93 @@ def main():
     tier1 = heapq.nlargest(23, artist_tracks(sys.argv[1]),
             key=lambda x: score(x, 43))
     excluded = set([x[0] for x in tier1])
-    track_uris = []
+    tracks = []
     i = 0
-    while len(track_uris) < 1000:
+    while len(tracks) < 1000:
         for row in tier1:
             track = default_idx(row[2], i)
             if track:
-                track_uris.append(track['u'])
-                if len(track_uris) >= 1000:
+                tracks.append(track)
+                if len(tracks) >= 1000:
                     break
         i += 1
     #for uri in track_uris:
     #    print uri
+    for track in tracks:
+        print json.dumps(track)
     
 
     tier2 = heapq.nlargest(47, artist_tracks(sys.argv[1], excluded=excluded),
             key=lambda x: score(x, 20))
     excluded |= set([x[0] for x in tier2])
-    track_uris = []
+    tracks = []
     i = 0
-    while len(track_uris) < 1000:
+    while len(tracks) < 1000:
         for row in tier2:
             track = default_idx(row[2], i)
             if track:
-                track_uris.append(track['u'])
-                if len(track_uris) >= 1000:
+                tracks.append(track)
+                if len(tracks) >= 1000:
                     break
         i += 1
     #for uri in track_uris:
     #    print uri
+    for track in tracks:
+        print json.dumps(track)
     
     
     tier3 = heapq.nlargest(101, artist_tracks(sys.argv[1], excluded=excluded),
             key=lambda x: score(x, 9))
     excluded |= set([x[0] for x in tier3])
-    track_uris = []
+    tracks = []
     i = 0
-    while len(track_uris) < 1000:
+    while len(tracks) < 1000:
         for row in tier3:
             track = default_idx(row[2], i)
             if track:
-                track_uris.append(track['u'])
-                if len(track_uris) >= 1000:
+                tracks.append(track)
+                if len(tracks) >= 1000:
                     break
         i += 1
     #for uri in track_uris:
     #    print uri
+    for track in tracks:
+        print json.dumps(track)
         
     tier4 = heapq.nlargest(236, artist_tracks(sys.argv[1], excluded=excluded),
             key=lambda x: score(x, 3))
     excluded |= set([x[0] for x in tier4])
-    track_uris = []
+    tracks = []
     i = 0
-    while len(track_uris) < 1000:
+    while len(tracks) < 1000:
         for row in tier4:
             track = default_idx(row[2], i)
             if track:
-                track_uris.append(track['u'])
-                if len(track_uris) >= 1000:
+                tracks.append(track)
+                if len(tracks) >= 1000:
                     break
         i += 1
     #for uri in track_uris:
     #    print uri
+    for track in tracks:
+        print json.dumps(track)
         
     tier5 = heapq.nlargest(707, artist_tracks(sys.argv[1], excluded=excluded),
             key=lambda x: score(x, 0))
-    track_uris = []
+    tracks = []
     i = 0
-    while len(track_uris) < 1000:
+    while len(tracks) < 1000:
         for row in tier5:
             track = default_idx(row[2], i)
             if track:
-                track_uris.append(track['u'])
-                if len(track_uris) >= 1000:
+                tracks.append(track)
+                if len(tracks) >= 1000:
                     break
         i += 1
-    for uri in track_uris:
-        print uri
+    #for uri in track_uris:
+    #    print uri
+    for track in tracks:
+        print json.dumps(track)
 
 if __name__ == '__main__':
     main()
