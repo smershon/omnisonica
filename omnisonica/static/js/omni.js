@@ -5,7 +5,7 @@ $(function() {
         w.document.open();
         w.document.write(`<body style="font-family:Courier;">`);
         _(track_list).each(function(t) {
-            w.document.write(t.u + "<br/>");
+            w.document.write("spotify:track:" + t.u + "<br/>");
         });
         w.document.write(`</body>`);
         w.document.close();
@@ -18,13 +18,6 @@ $(function() {
             track.m.m = track.m.m.getTime()/1000;
             return track
         });
-        /*
-        _(tracks).each(function(t) {
-            console.log(t);
-            t.m.a = t.m.a.getTime()/1000;
-            t.m.m = t.m.m.getTime()/1000;
-        });
-        */
         $.ajax({
             type: "POST",
             contentType: "application/json; charset=utf-8",

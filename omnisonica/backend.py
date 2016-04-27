@@ -1,5 +1,6 @@
-from clients.datatype import Album, Artist, Track, Meta
+from clients.datatype import Album, Artist, Track, Meta, track_from_dict
 from clients import spotify_client
+from clients import omni_redis
 import random
 import os
 import logging
@@ -103,8 +104,12 @@ def get_tracks_from_file(view=None):
         pass
     return tracks
     
-def get_views(user_id=None):
-    return [x.split('.')[0] for x in os.listdir('data')]
+def get_tracks_from_redis(view, user='default'):
+    return omni_redis.get_view(user, view)
+    
+def get_views(user_id='default'):
+    #return [x.split('.')[0] for x in os.listdir('data')]
+    return omni_redis.list_views(user_id)
     
 def search_tracks(query):
     return spotify.search_tracks(query)
@@ -112,12 +117,16 @@ def search_tracks(query):
 def track_data(track_ids):
     return spotify.track_data(track_ids)
     
-def save_view(view_name, tracks):
+def save_view(view_name, tracks, user_id='default'):
     tracks.sort(key=lambda x: x['idx'])
+    """
     with open('data/%s.json' % view_name, 'wb') as f:
         for track in tracks:
             track.pop('idx')
             track.pop('v')
             f.write('%s\n' % json.dumps(track))
+    """
+    tracks = [track_from_dict(x) for x in tracks]
+    omni_redis.put_view(user_id, view_name, tracks)
    
-get_tracks = get_tracks_from_file 
+get_tracks = get_tracks_from_redis

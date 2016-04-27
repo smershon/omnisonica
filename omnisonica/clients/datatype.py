@@ -27,6 +27,17 @@ class Track(object):
         
     def __repr__(self):
         return '%s: %s [%s]' % (self.artist.name, self.title, self.album.title)
+
+def track_from_dict(d):
+    return Track(
+        d['u'],
+        title=d.get('t'),
+        duration=d.get('d'),
+        popularity=d.get('p'),
+        artist=artist_from_dict(d.get('a')),
+        album=album_from_dict(d.get('c')),
+        meta=meta_from_dict(d.get('m'))
+    )
         
 class Artist(object):
     def __init__(self, uid,
@@ -42,6 +53,13 @@ class Artist(object):
             'n': self.name,
             'c': self.country
         }
+        
+def artist_from_dict(d):
+    return Artist(
+        d['u'],
+        name=d.get('n'),
+        country=d.get('c')
+    )
         
 class Album(object):
     def __init__(self, uid,
@@ -61,6 +79,14 @@ class Album(object):
             'i': self.image_url
         }
         
+def album_from_dict(d):
+    return Album(
+        d['u'],
+        title=d.get('t'),
+        release_date=d.get('r'),
+        image_url=d.get('i')
+    )
+        
 class Meta(object):
     def __init__(self,
             date_added=None,
@@ -76,3 +102,10 @@ class Meta(object):
             'm': self.last_modified,
             'x': self.tags
         }
+        
+def meta_from_dict(d):
+    return Meta(
+        date_added=d.get('a'),
+        last_modified=d.get('m'),
+        tags=d.get('x')
+    )

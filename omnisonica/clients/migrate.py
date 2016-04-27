@@ -5,8 +5,9 @@ import datatype
 import datetime
 import calendar
 import wiki
+import omni_redis
 
-def migrate(path_in, path_out):
+def migrate_v1(path_in, path_out):
     client = spotify_client.Client()
     uris = []
     with open(path_in, 'rb') as f:
@@ -19,6 +20,14 @@ def migrate(path_in, path_out):
             ts = calendar.timegm(datetime.datetime.now().utctimetuple())
             t.meta = datatype.Meta(date_added=ts, last_modified=ts)
             f.write('%s\n' % json.dumps(t._to_dict()))
+
+def migrate_v2(path_in, view):
+    with open(path_in, 'rb') as f:
+        for line in f:
+            tracks = [datatype.track_from_dict(json.loads(line)) for line in f]
+    omni_redis.put_view('default', view, tracks)
+    
+migrate = migrate_v2
 
 def add_countries(path_in, path_out):
     tracks = []
