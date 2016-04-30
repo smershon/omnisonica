@@ -36,7 +36,6 @@ def get_tracks_from_file(view=None):
                         tags=doc.get('m', {}).get('x')
                     )
                 )
-                log.info(track.title)
                 tracks.append(track)
     except Exception as e:
         log.warn('THERE WAS PROBLEM: %r', e)

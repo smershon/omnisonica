@@ -3,6 +3,7 @@ import simplejson as json
 import spotify_client
 import datatype
 import datetime
+import time
 import calendar
 import wiki
 import omni_redis
@@ -23,8 +24,11 @@ def migrate_v1(path_in, path_out):
 
 def migrate_v2(path_in, view):
     with open(path_in, 'rb') as f:
-        for line in f:
-            tracks = [datatype.track_from_dict(json.loads(line)) for line in f]
+        tracks = [datatype.track_from_dict(json.loads(line)) for line in f]
+    for t in tracks:
+        t.meta.date_added = t.meta.date_added or int(round(time.time()))
+        t.meta.last_modified = t.meta.last_modified or int(round(time.time()))
+    print 'putting %d tracks' % len(tracks)
     omni_redis.put_view('default', view, tracks)
     
 migrate = migrate_v2

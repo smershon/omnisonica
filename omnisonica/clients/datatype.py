@@ -104,6 +104,7 @@ class Meta(object):
         }
         
 def meta_from_dict(d):
+    d = d or {}
     return Meta(
         date_added=d.get('a'),
         last_modified=d.get('m'),

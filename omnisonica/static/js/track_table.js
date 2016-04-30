@@ -256,6 +256,8 @@ TrackTable.prototype = {
                   </th>
                   <th class="column_popularity">
                     <button class="sort_button">Popularity</button>
+                    <div>Min: <input type="text" class="popularity" id="min_popularity"></input></div>
+                    <div>Max: <input type="text" class="popularity" id="max_popularity"></input></div>
                   </th>
                   <th class="column_added">
                     <button class="sort_button">Added</button>
@@ -297,7 +299,9 @@ TrackTable.prototype = {
             "max_duration": parse_time(this.div.find("#max_duration").val()),
             "min_duration": parse_time(this.div.find("#min_duration").val()),
             "max_date": this.div.find("#max_date").val(),
-            "min_date": this.div.find("#min_date").val()
+            "min_date": this.div.find("#min_date").val(),
+            "min_popularity": this.div.find("#min_popularity").val(),
+            "max_popularity": this.div.find("#max_popularity").val()
         }
     },
     
@@ -324,22 +328,34 @@ TrackTable.prototype = {
         if (params.max_date && track.c.r > params.max_date) {
             return false;
         }
+        if (params.min_popularity && track.p < params.min_popularity) {
+            return false;
+        }
+        if (params.max_popularity && track.p > params.max_popularity) {
+            return false;
+        }
         return true;
     },
     
     "filter_display": function() {
         var table = this;
         var params = table.compile_filter();
-        _(table.tracks).each(function(uid) {
-            var track = table.track_data[uid];
-            var row = table.div.find("tr[uid='" + uid + "']");
+        var uid;
+        var track;
+        var trackrow;
+        
+        table.div.find(".trackrow").each(function(i,row) {
+            trackrow = $(row);
+            uid = trackrow.attr("uid");
+            track = table.track_data[uid]; 
             track.v = table.show_track(uid, params);
-            if (track.v) { 
-                row.show();
+            if(track.v) {
+                trackrow.show();
             } else {
-                row.hide();
+                trackrow.hide();
             }
         });
+        
         table.redisplay_meta();
     },
     
@@ -548,15 +564,17 @@ TrackTable.prototype = {
             var t = table.track_data[uid];
             if (!visible || t.v) { returned_tracks.push(t); }
         });
+        
+        if (slice) {
+            returned_tracks = track_slice(slice, returned_tracks)
+        }
+        
         if (ordering === "random") {
-            if (slice) {
-                returned_tracks = track_slice(slice, returned_tracks);
-            } else {
-                returned_tracks = shuffle(returned_tracks);
-            }
+            returned_tracks = shuffle(returned_tracks);
         } else if (ordering === "smart") {
             returned_tracks = smart_shuffle(returned_tracks);
         }
+        
         return returned_tracks;
     },
 

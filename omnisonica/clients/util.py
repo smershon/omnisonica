@@ -43,3 +43,11 @@ def clean_title(title):
             break
         cleaned_title.append(token)
     return ' '.join(cleaned_title)
+    
+def batch_retrieve(data, src_field, lookup_fn, tgt_field=None, default=None):
+    tgt_field = tgt_field or src_field
+    lookup = lookup_fn(set([x[src_field] for x in data]))
+    for d in data:
+        d[tgt_field] = lookup.get(d[src_field], default)
+     
+    

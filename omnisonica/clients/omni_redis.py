@@ -1,6 +1,7 @@
 import redis
 import simplejson as json
 import datatype
+import util
 
 r = redis.Redis()
 
@@ -13,12 +14,16 @@ def add_view(user, view):
 def get_view(user, name):
     key = 'V:%s:%s' % (user, name)
     track_rows = [json.loads(x) for x in r.lrange(key, 0, -1)]
+    track_lookup = get_tracks([x[0] for x in track_rows])
     tracks = []
     for row in track_rows:
-        track = get_track(row[0])
-        track['m'] = row[1]
-        tracks.append(datatype.track_from_dict(track))
-    return tracks
+        track = track_lookup.get(row[0])
+        if track:
+            track['m'] = row[1]
+            tracks.append(track)
+    util.batch_retrieve(tracks, 'a', get_artists)
+    util.batch_retrieve(tracks, 'c', get_albums)       
+    return [datatype.track_from_dict(x) for x in tracks]
     
 def put_view(user, name, tracks):
     add_view(user, name)
@@ -37,6 +42,16 @@ def get_track(track_uid):
     track['c'] = get_album(track['c'])
     return track
     
+def get_tracks(uids):
+    pipe = r.pipeline()
+    for uid in uids:
+        pipe.hgetall('T:%s' % uid)
+    docs = pipe.execute()
+    data = (zip(uids, docs))
+    for uid, doc in data:
+        doc['u'] = uid
+    return dict(data)
+    
 def put_track(track):
     key = 'T:%s' % track.uid.split(':')[-1]
     r.hmset(key, {
@@ -53,7 +68,17 @@ def get_artist(artist_uid):
     key = 'A:%s' % artist_uid
     artist = r.hgetall(key)
     artist['u'] = artist_uid
-    return artist 
+    return artist
+    
+def get_artists(uids):
+    pipe = r.pipeline()
+    for uid in uids:
+        pipe.hgetall('A:%s' % uid)
+    docs = pipe.execute()
+    data = (zip(uids, docs))
+    for uid, doc in data:
+        doc['u'] = uid
+    return dict(data)
     
 def put_artist(artist):
     key = 'A:%s' % artist.uid.split(':')[-1]
@@ -67,6 +92,16 @@ def get_album(album_uid):
     album = r.hgetall(key)
     album['u'] = album_uid
     return album
+    
+def get_albums(uids):
+    pipe = r.pipeline()
+    for uid in uids:
+        pipe.hgetall('C:%s' % uid)
+    docs = pipe.execute()
+    data = (zip(uids, docs))
+    for uid, doc in data:
+        doc['u'] = uid
+    return dict(data)
     
 def put_album(album):
     key = 'C:%s' % album.uid.split(':')[-1]

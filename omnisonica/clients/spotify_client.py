@@ -9,6 +9,7 @@ from datatype import Artist
 from datatype import Track
 
 import util
+import kt
 
 def track_from_json(doc):
     if doc['album']['images']:
@@ -122,9 +123,15 @@ class Client(object):
                 doc = {'tracks': {'items': []}}
             
             for track in doc.get('tracks', {}).get('items',[]):
-                title = util.clean_title(track['name']).lower()
+                title = kt.normalize(track['name'])
                 if track['artists'][0]['uri'].split(':')[-1] == uid and title not in seen:
-                    tracks.append(track_from_json(track))
+                    uniq = True
+                    for seen_title in seen:
+                        if kt.matches(title, seen_title):
+                            uniq = False
+                            break
+                    if uniq:
+                        tracks.append(track_from_json(track))
                     seen.add(title)
                 if len(tracks) >= count:
                     break
