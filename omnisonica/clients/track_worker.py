@@ -13,13 +13,27 @@ logging.basicConfig(level=logging.INFO)
 
 spotify = spotify_client.Client()
 
+def normalize(title):
+    title = title.lower()
+    title = title.replace('/', ' / ')
+    title = title.replace('.', '. ')
+    print title
+    r = []
+    for i,token in enumerate(title.split(' ')):
+        if (token.startswith('-') or 
+                (token.startswith('(') and i > 0) or 
+                (token.startswith('[') and i > 0)):
+            break
+        r.append(token)
+    r = ' '.join(r)
+    return r
+
 def get_original_release(track):
-    artist = track.artist.name.lower()
-    title = kt.normalize(track.title)
+    title = normalize(track.title)
     release_date = None
     for i in range(5):
         try:
-            release_date = musicbrainz.earliest_date(artist, title)
+            release_date = musicbrainz.earliest_date(track.artist.name, title)
         except Exception as e:
             print 'PROBLEM:', e
             time.sleep(0.5 * 2*i)

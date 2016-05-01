@@ -7,6 +7,8 @@ import logging
 import simplejson as json
 
 log = logging.getLogger(__name__)
+
+spotify = spotify_client.Client()
     
 def get_tracks_from_file(view=None):
     tracks = []

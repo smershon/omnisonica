@@ -9,7 +9,7 @@ def earliest_date(artist_name, title, offset=0, us_only=True):
     insert = ' AND country:US' if us_only else ''
     tmpl = 'http://musicbrainz.org/ws/2/recording/?%s'
     url = tmpl % urllib.urlencode({
-        'query': '"%s" AND artist:"%s" AND status:official%s' % (title, artist_name.encode('utf-8'), insert), 
+        'query': '"%s" AND artist:"%s" AND status:official%s' % (title, artist_name, insert), 
         'offset': offset,
         'fmt': 'json'
     })
