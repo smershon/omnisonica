@@ -3,6 +3,7 @@ class Track(object):
             title=None,
             duration=None,
             popularity=None,
+            original_release=None,
             artist=None, 
             album=None,
             meta=None):
@@ -10,6 +11,7 @@ class Track(object):
         self.title = title
         self.duration=duration
         self.popularity=popularity
+        self.original_release=original_release
         self.artist = artist
         self.album = album
         self.meta = meta
@@ -20,6 +22,7 @@ class Track(object):
             't': self.title,
             'd': self.duration,
             'p': self.popularity,
+            'r': self.original_release,
             'a': self.artist._to_dict() if self.artist else None,
             'c': self.album._to_dict() if self.album else None,
             'm': self.meta._to_dict() if self.meta else None
@@ -34,6 +37,7 @@ def track_from_dict(d):
         title=d.get('t'),
         duration=d.get('d'),
         popularity=d.get('p'),
+        original_release=d.get('r'),
         artist=artist_from_dict(d.get('a')),
         album=album_from_dict(d.get('c')),
         meta=meta_from_dict(d.get('m'))

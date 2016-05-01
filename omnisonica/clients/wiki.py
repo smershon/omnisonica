@@ -1,7 +1,10 @@
 import requests
 import sys
+import logging
 from HTMLParser import HTMLParser
 from collections import defaultdict
+
+log = logging.getLogger(__name__)
 
 class WikiHTMLParser(HTMLParser):
     
@@ -135,12 +138,12 @@ def from_file():
             artists.add(doc['a']['n'])
     for i,artist in enumerate(artists):
         country = country_for_artist(artist)
-        print '%d/%d' % (i, len(artists)), artist, country
+        log.info('%d/%d' % (i, len(artists)), artist, country)
         if not country:
             not_found.add(artist)
-    print '\nNOT FOUND'
+    log.info('\nNOT FOUND')
     for artist in not_found:
-        print artist
+        log.info(artist)
  
 def just_one():
     print country_for_artist(sys.argv[1])

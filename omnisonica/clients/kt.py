@@ -10,7 +10,9 @@ def normalize(s):
     s = s.replace('&', 'and')
     r = []
     for i,token in enumerate(s.split(' ')):
-        if token.startswith('-') or (token.startswith('(') and i > 0):
+        if (token.startswith('-') or 
+                (token.startswith('(') and i > 0) or 
+                (token.startswith('[') and i > 0)):
             break
         r.append(token)
     r = ' '.join(r)

@@ -5,6 +5,12 @@ import util
 
 r = redis.Redis()
 
+def qpop(topic):
+    return r.lpop('Q:%s' % topic)
+    
+def qpush(topic, datum):
+    r.rpush('Q:%s' % topic, datum)
+
 def list_views(user):
     return r.smembers('U:%s:views' % user)
     
@@ -40,7 +46,7 @@ def get_track(track_uid):
     track['u'] = track_uid
     track['a'] = get_artist(track['a'])
     track['c'] = get_album(track['c'])
-    return track
+    return datatype.track_from_dict(track)
     
 def get_tracks(uids):
     pipe = r.pipeline()
@@ -58,6 +64,7 @@ def put_track(track):
         't': track.title,
         'd': track.duration,
         'p': track.popularity,
+        'r': track.original_release,
         'a': track.artist.uid.split(':')[-1],
         'c': track.album.uid.split(':')[-1]
     })

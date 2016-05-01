@@ -1,15 +1,25 @@
 import requests
+import urllib
 import sys
+import logging
 
-def earliest_date(artist_name, title, offset=0):
-    tmpl = 'http://musicbrainz.org/ws/2/recording/?query="%s" AND artist:"%s" AND status:official&offset=%d&fmt=json'
-    url = tmpl % (title, artist_name, offset)
-    print url
+log = logging.getLogger(__name__)
+
+def earliest_date(artist_name, title, offset=0, us_only=True):
+    insert = ' AND country:US' if us_only else ''
+    tmpl = 'http://musicbrainz.org/ws/2/recording/?%s'
+    url = tmpl % urllib.urlencode({
+        'query': '"%s" AND artist:"%s" AND status:official%s' % (title, artist_name.encode('utf-8'), insert), 
+        'offset': offset,
+        'fmt': 'json'
+    })
+    log.info(url)
     resp = requests.get(url)
+    log.info('... %r', resp.status_code)
     doc = resp.json()
     big_dates = set()
     small_dates = set()
-    for rec in doc['recordings']:
+    for rec in doc.get('recordings', []):
         for release in rec['releases']:
             if 'date' in release:
                 date = release['date']

@@ -212,6 +212,7 @@ TrackTable.prototype = {
           <td class="duration"><%= duration %></td>
           <td class="release_date"><%= track.c.r %></td>
           <td class="popularity"><%= track.p %></td>
+          <td class="original_release"><%= track.r %></td>
           <td class="added"><%= added %></td>
           <td class="modified"><%= modified %></td>
           <td>
@@ -259,6 +260,11 @@ TrackTable.prototype = {
                     <div>Min: <input type="text" class="popularity" id="min_popularity"></input></div>
                     <div>Max: <input type="text" class="popularity" id="max_popularity"></input></div>
                   </th>
+                  <th class="column_original_release">
+                    <button class="sort_button">Original Release Date</button>
+                    <div>Min: <input type="text" class="date" id="min_orig_date"></input></div>
+                    <div>Max: <input type="text" class="date" id="max_orig_date"></input></div>
+                  </th>
                   <th class="column_added">
                     <button class="sort_button">Added</button>
                   </th>
@@ -282,6 +288,7 @@ TrackTable.prototype = {
         table.make_sortable(".column_duration", function(t) { return t.d; });
         table.make_sortable(".column_release_date", function(t) { return t.c.r; });
         table.make_sortable(".column_popularity", function(t) { return -t.p; });
+        table.make_sortable(".column_original_release", function(t) { return t.r; });
         table.make_sortable(".column_added", function(t) { return t.m.a; });
         table.make_sortable(".column_modified", function(t) { return t.m.m; });
         table.div.find("th input").keypress(function(e) {
@@ -301,7 +308,9 @@ TrackTable.prototype = {
             "max_date": this.div.find("#max_date").val(),
             "min_date": this.div.find("#min_date").val(),
             "min_popularity": this.div.find("#min_popularity").val(),
-            "max_popularity": this.div.find("#max_popularity").val()
+            "max_popularity": this.div.find("#max_popularity").val(),
+            "min_orig_date": this.div.find("#min_orig_date").val(),
+            "max_orig_date": this.div.find("#max_orig_date").val()
         }
     },
     
@@ -332,6 +341,12 @@ TrackTable.prototype = {
             return false;
         }
         if (params.max_popularity && track.p > params.max_popularity) {
+            return false;
+        }
+        if (params.min_orig_date && track.r < params.min_orig_date) {
+            return false;
+        }
+        if (params.max_orig_date && track.r > params.max_orig_date) {
             return false;
         }
         return true;

@@ -1,7 +1,6 @@
 import simplejson as json
-
+import logging
 import requests
-
 import urllib
 
 from datatype import Album
@@ -10,6 +9,8 @@ from datatype import Track
 
 import util
 import kt
+
+log = logging.getLogger(__name__)
 
 def track_from_json(doc):
     if doc['album']['images']:
