@@ -41,5 +41,11 @@ def save_view(view_name):
     backend.save_view(view_name, data)
     return jsonify({'result': 'saved'})
     
+@app.route('/export_view/<view_name>', methods=['POST'])
+def export_view(view_name):
+    uids = request.json
+    backend.export_view(view_name, uids)
+    return jsonify({'results': 'exported'})
+    
 if __name__ == '__main__':
     app.run()

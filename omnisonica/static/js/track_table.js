@@ -213,6 +213,7 @@ TrackTable.prototype = {
           <td class="release_date"><%= track.c.r %></td>
           <td class="popularity"><%= track.p %></td>
           <td class="original_release"><%= track.r %></td>
+          <td class="artist_country"><%= track.a.c %></td>
           <td class="added"><%= added %></td>
           <td class="modified"><%= modified %></td>
           <td>
@@ -265,6 +266,10 @@ TrackTable.prototype = {
                     <div>Min: <input type="text" class="date" id="min_orig_date"></input></div>
                     <div>Max: <input type="text" class="date" id="max_orig_date"></input></div>
                   </th>
+                  <th class="column_artist_country">
+                    <button class="sort_button">Country</button>
+                    <input type="text" id="artist_country_filter"></input>
+                  </th>
                   <th class="column_added">
                     <button class="sort_button">Added</button>
                   </th>
@@ -289,6 +294,7 @@ TrackTable.prototype = {
         table.make_sortable(".column_release_date", function(t) { return t.c.r; });
         table.make_sortable(".column_popularity", function(t) { return -t.p; });
         table.make_sortable(".column_original_release", function(t) { return t.r; });
+        table.make_sortable(".column_artist_country", function(t) { return t.a.c; });
         table.make_sortable(".column_added", function(t) { return t.m.a; });
         table.make_sortable(".column_modified", function(t) { return t.m.m; });
         table.div.find("th input").keypress(function(e) {
@@ -310,7 +316,8 @@ TrackTable.prototype = {
             "min_popularity": this.div.find("#min_popularity").val(),
             "max_popularity": this.div.find("#max_popularity").val(),
             "min_orig_date": this.div.find("#min_orig_date").val(),
-            "max_orig_date": this.div.find("#max_orig_date").val()
+            "max_orig_date": this.div.find("#max_orig_date").val(),
+            "artist_country_filter": this.div.find("#artist_country_filter").val()
         }
     },
     
@@ -349,6 +356,10 @@ TrackTable.prototype = {
         if (params.max_orig_date && track.r > params.max_orig_date) {
             return false;
         }
+        if (params.artist_country_filter && track.a.c != params.artist_country_filter) {
+            return false;
+        }
+        
         return true;
     },
     

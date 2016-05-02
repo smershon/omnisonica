@@ -30,6 +30,23 @@ $(function() {
         });
     }
     
+    function export_view(view_name) {
+        if (!view_name) { return; }
+        var uids = tt.get_tracks(true).map(function(t) {
+            return t.u;
+        });
+        $.ajax({
+            type: "POST",
+            contentType: "application/json; charset=utf-8",
+            url: "/export_view/" + view_name,
+            data: JSON.stringify(uids),
+            success: function(data) {
+                window.location = "/" + view_name;
+            },
+            dataType: "json"
+        });
+    }
+    
     function main_search(manager) {
         var search_term = $("#track_search_input").val();
         if (!search_term) { return; }
@@ -68,6 +85,10 @@ $(function() {
             return uri.split("/").pop().split(":").pop();
         });
         tt.injest_tracks(pl);
+    });
+    
+    $("button.export_view").click(function() {
+        export_view($("#export_view_name").val());
     });
     
     $("button.filter_columns").click(function() {

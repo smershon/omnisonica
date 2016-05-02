@@ -60,6 +60,9 @@ def save_view(view_name, tracks, user_id='default'):
     tracks.sort(key=lambda x: x['idx'])
     tracks = [track_from_dict(x) for x in tracks]
     omni_redis.put_view(user_id, view_name, tracks)
+    
+def export_view(view_name, uids, user_id='default'):
+    omni_redis.export_view(user_id, view_name, uids)
    
 get_tracks = get_tracks_from_redis
 #get_tracks = get_tracks_from_file

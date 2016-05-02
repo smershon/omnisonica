@@ -1,3 +1,5 @@
+import time
+
 class Track(object):
     def __init__(self, uid,
             title=None,
@@ -106,6 +108,11 @@ class Meta(object):
             'm': self.last_modified,
             'x': self.tags
         }
+        
+def blank_meta():
+    return Meta(
+        date_added=int(round(time.time())),
+        last_modified=int(round(time.time())))
         
 def meta_from_dict(d):
     d = d or {}

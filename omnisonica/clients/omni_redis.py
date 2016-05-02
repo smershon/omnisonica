@@ -39,6 +39,13 @@ def put_view(user, name, tracks):
     r.rpush(key, *data)
     for track in tracks:
         put_track(track)
+        
+def export_view(user, name, uids):
+    data = [json.dumps((uid, datatype.blank_meta()._to_dict())) for uid in uids]
+    add_view(user, name)
+    key = 'V:%s:%s' % (user, name)
+    r.delete(key)
+    r.rpush(key, *data)
 
 def get_track(track_uid):
     key = 'T:%s' % track_uid
