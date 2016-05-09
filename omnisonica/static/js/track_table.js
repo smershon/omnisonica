@@ -199,12 +199,14 @@ var TrackTable = function(div, meta_div) {
     this.track_data = {};
     this.insert_html();
     this.attach_header_listeners();
+    this.page = 1;
+    this.page_size = 100;
 };
 
 TrackTable.prototype = {
     
     "row_template": _.template(`
-        <tr class="trackrow" uid="<%= uid %>" style="display:<%= visibility %>;">
+        <tr class="trackrow" uid="<%= uid %>">
           <td class="uid">spotify:track:<%= track.u %></td>
           <td class="title"><%= track.t %></td>
           <td class="artist"><%= track.a.n %></td>
@@ -230,6 +232,8 @@ TrackTable.prototype = {
     
     "insert_html": function() {
         this.div.html(`
+            <button class="last_page">last</button>
+            <button class="next_page">next</button>
             <table class="tracktable">
               <thead>
                 <tr class="header">
@@ -282,6 +286,8 @@ TrackTable.prototype = {
               <tbody class="data">
               </tbody>
             </table>
+            <button class="last_page">last</button>
+            <button class="next_page">next</button>
         `);
     },
     
@@ -302,6 +308,8 @@ TrackTable.prototype = {
                 table.filter_display();
             }
         });
+        table.div.find("button.last_page").click(function() { table.last_page(); });
+        table.div.find("button.next_page").click(function() { table.next_page(); });
     },
     
     "compile_filter": function() {
@@ -370,6 +378,12 @@ TrackTable.prototype = {
         var track;
         var trackrow;
         
+        _(table.tracks).each(function(uid) {
+            track = table.track_data[uid];
+            track.v = table.show_track(uid, params);
+        });
+        
+        /*
         table.div.find(".trackrow").each(function(i,row) {
             trackrow = $(row);
             uid = trackrow.attr("uid");
@@ -380,8 +394,9 @@ TrackTable.prototype = {
             } else {
                 trackrow.hide();
             }
-        });
+        });*/
         
+        table.reset_display();
         table.redisplay_meta();
     },
     
@@ -450,17 +465,23 @@ TrackTable.prototype = {
     "reset_display": function() {
         var table = this;
         track_html = "";
-        _(table.tracks).each(function(uid) {
+        var shown = 0;
+        for (var i = 0; i < table.tracks.length && shown < table.page*table.page_size; i++) {
+            var uid = table.tracks[i];
             var track = table.track_data[uid];
-            track_html += table.row_template({
-                "track": track,
-                "uid": uid,
-                "visibility": track.v ? "table-row" : "none",
-                "duration": format_time(track.d),
-                "added": format_date_and_time(track.m.a),
-                "modified": format_date_and_time(track.m.m)
-            });
-        });
+            if (track.v) {
+                if (shown >= (table.page - 1)*table.page_size) {
+                    track_html += table.row_template({
+                        "track": track,
+                        "uid": uid,
+                        "duration": format_time(track.d),
+                        "added": format_date_and_time(track.m.a),
+                        "modified": format_date_and_time(track.m.m)
+                    });
+                }
+                shown++;              
+            }
+        }    
         table.div.find(".data").html(track_html);
         table.filter_columns();
         table.redisplay_meta();
@@ -476,6 +497,16 @@ TrackTable.prototype = {
         table.div.find("button.search").click(function() {
             table.inline_search_results($(this).parent().parent());
         });
+    },
+    
+    "next_page": function() {
+        this.page++;
+        this.reset_display();
+    },
+    
+    "last_page": function() {
+        this.page--;
+        this.reset_display();
     },
     
     "add_track": function(track) {

@@ -95,7 +95,7 @@ class Client(object):
     def top_tracks(self, artist_uid, count=10):
         uid = artist_uid.split(':')[-1].split('/')[-1]
         uri = 'https://api.spotify.com/v1/artists/%s' % uid
-        print uri
+        log.debug(uri)
         resp = util.retry(uri)
         doc = resp.json()
         artist_name = doc['name']
@@ -104,7 +104,7 @@ class Client(object):
         offset = 0
         tracks = []
         seen = set()
-        print artist_name.encode('utf-8')
+        log.debug(artist_name.encode('utf-8'))
         while len(tracks) < count and misses < 5:
             prev_len = len(tracks)
             uri = 'https://api.spotify.com/v1/search?%s' % urllib.urlencode(
@@ -115,7 +115,7 @@ class Client(object):
                     'q': 'artist:%s' % artist_name.encode('utf-8')
                 }
             )
-            print uri
+            log.debug(uri)
             resp = util.retry(uri)
             
             try:
